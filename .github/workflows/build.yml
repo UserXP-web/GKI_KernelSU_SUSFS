@@ -526,6 +526,8 @@ jobs:
           # 应用主 SUSFS 补丁到内核
           cd $KERNEL_ROOT/common
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
+          # 添加缺失的susfs头文件的导入
+          sed -i '/#include <linux\/susfs_def.h>/a #include <linux/susfs.h>' ./fs/namespace.c
 
           # 应用版本特定修复 (Next/SukiSU/ReSukiSU 变体)
           if [ "${{ inputs.ksu_variant }}" == "Next" ] || [ "${{ inputs.ksu_variant }}" == "SukiSU" ] || [ "${{ inputs.ksu_variant }}" == "ReSukiSU" ]; then
