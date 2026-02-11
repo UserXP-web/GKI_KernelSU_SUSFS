@@ -235,14 +235,39 @@ jobs:
 
           echo "克隆 SUSFS (分支: $SUSFS_BRANCH)..."
           if [ "${{ inputs.ksu_variant }}" == "SukiSU" ]; then
-            # SukiSU 使用 ShirkNeko 的 SUSFS 分支
+            # SukiSU 使用 ShirkNeko 的 SUSFS 分支（保持默认）
             git clone https://github.com/ShirkNeko/susfs4ksu.git -b "$SUSFS_BRANCH"
-          elif [ "${{ inputs.ksu_variant }}" == "ReSukiSU" ]; then
-            # ReSukiSU 使用 simonpunk 的原版 SUSFS
-            git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
           else
-            # 其他变体使用 simonpunk 的原版 SUSFS
-            git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
+            # 其他变体使用 simonpunk 的原版 SUSFS（使用特定 commit）
+            case "${{ inputs.android_version }}-${{ inputs.kernel_version }}" in
+              "android12-5.10")
+                SUSFS_COMMIT="d410963cbdcd1856ea6a913bae9960f5210886b7"
+                ;;
+              "android13-5.15")
+                SUSFS_COMMIT="8f20734437f8f72a23b7bfc19aecdea9797a5bba"
+                ;;
+              "android14-5.15")
+                SUSFS_COMMIT="9d43fc9ffebb4d81338cb2ab6d362ceeab4f87bc"
+                ;;
+              "android14-6.1")
+                SUSFS_COMMIT="5744a57676e20b64701f2209f6390b412a7df9f6"
+                ;;
+              "android15-6.6")
+                SUSFS_COMMIT="f77334c982f9970958b856665c4d26ddf75e8248"
+                ;;
+              *)
+                SUSFS_COMMIT=""
+                ;;
+            esac
+
+            if [ -n "$SUSFS_COMMIT" ]; then
+              git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH" --depth 1000
+              cd susfs4ksu
+              git checkout "$SUSFS_COMMIT"
+              cd ..
+            else
+              git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
+            fi
           fi
 
           # 检查是否启用自定义提交
@@ -501,6 +526,8 @@ jobs:
           # 应用主 SUSFS 补丁到内核
           cd $KERNEL_ROOT/common
           patch -p1 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
+          # 添加缺失的susfs头文件的导入
+          sed -i '/#include <linux\/susfs_def.h>/a #include <linux/susfs.h>' ./fs/namespace.c
 
           # 应用版本特定修复 (Next/SukiSU/ReSukiSU 变体)
           if [ "${{ inputs.ksu_variant }}" == "Next" ] || [ "${{ inputs.ksu_variant }}" == "SukiSU" ] || [ "${{ inputs.ksu_variant }}" == "ReSukiSU" ]; then
@@ -511,6 +538,12 @@ jobs:
 
             # Android 12 - 5.10 修复
             if [[ "${{ inputs.android_version }}" == "android12" && "${{ inputs.kernel_version }}" == "5.10" ]]; then
+              # 回退 KernelSU 中导致 SUSFS 冲突的提交
+              cd $KERNEL_ROOT/KernelSU
+              echo "回退 KernelSU 提交 e16cf610..."
+              git revert --no-commit e16cf610855b73fd248d9e3609cd993ec667de02 || true
+              cd $KERNEL_ROOT/common
+
               if [[ "$CURRENT_SUB" -le 209 ]]; then
                 sed -i -e 's/goto show_pad;/return 0;/' ./fs/proc/task_mmu.c
               fi
@@ -527,6 +560,12 @@ jobs:
 
             # Android 13 - 5.15 修复
             if [[ "${{ inputs.android_version }}" == "android13" && "${{ inputs.kernel_version }}" == "5.15" ]]; then
+              # 回退 KernelSU 中导致 SUSFS 冲突的提交
+              cd $KERNEL_ROOT/KernelSU
+              echo "回退 KernelSU 提交 e16cf610..."
+              git revert --no-commit e16cf610855b73fd248d9e3609cd993ec667de02 || true
+              cd $KERNEL_ROOT/common
+
               if [[ "$CURRENT_SUB" -le 41 ]]; then
                 cp $KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/a13-5.15/namespace.c.patch ./
                 patch -p1 < namespace.c.patch || true
@@ -543,6 +582,12 @@ jobs:
 
             # Android 14 - 5.15 修复
             if [[ "${{ inputs.android_version }}" == "android14" && "${{ inputs.kernel_version }}" == "5.15" ]]; then
+              # 回退 KernelSU 中导致 SUSFS 冲突的提交
+              cd $KERNEL_ROOT/KernelSU
+              echo "回退 KernelSU 提交 e16cf610..."
+              git revert --no-commit e16cf610855b73fd248d9e3609cd993ec667de02 || true
+              cd $KERNEL_ROOT/common
+
               if [[ "$CURRENT_SUB" -le 148 && "${{ inputs.os_patch_level }}" != "2024-05" ]]; then
                 sed -i -e 's/goto show_pad;/return 0;/' ./fs/proc/task_mmu.c
               fi
@@ -550,6 +595,12 @@ jobs:
 
             # Android 14 - 6.1 修复
             if [[ "${{ inputs.android_version }}" == "android14" && "${{ inputs.kernel_version }}" == "6.1" ]]; then
+              # 回退 KernelSU 中导致 SUSFS 冲突的提交
+              cd $KERNEL_ROOT/KernelSU
+              echo "回退 KernelSU 提交 e16cf610..."
+              git revert --no-commit e16cf610855b73fd248d9e3609cd993ec667de02 || true
+              cd $KERNEL_ROOT/common
+
               if [[ "$CURRENT_SUB" -ge 145 ]]; then
                 cp $KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/a14-6.1/base.c.patch ./
                 patch -p1 < base.c.patch || true
@@ -561,6 +612,12 @@ jobs:
 
             # Android 15 - 6.6 修复
             if [[ "${{ inputs.android_version }}" == "android15" && "${{ inputs.kernel_version }}" == "6.6" ]]; then
+              # 回退 KernelSU 中导致 SUSFS 冲突的提交
+              cd $KERNEL_ROOT/KernelSU
+              echo "回退 KernelSU 提交 e16cf610..."
+              git revert --no-commit e16cf610855b73fd248d9e3609cd993ec667de02 || true
+              cd $KERNEL_ROOT/common
+
               if [[ "$CURRENT_SUB" -ge 98 ]]; then
                 cp $KERNEL_PATCHES/wild/susfs_fix_patches/v${SUSFS_VERSION}/a15-6.6/base.c.patch ./
                 patch -p1 < base.c.patch || true
