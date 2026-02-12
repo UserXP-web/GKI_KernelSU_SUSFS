@@ -61,6 +61,11 @@ on:
         required: true
         type: boolean
         default: true
+      add_nomount:
+        description: 'Add NoMount support'
+        required: false
+        type: boolean
+        default: false
       supp_op:
         required: false
         type: boolean
@@ -626,6 +631,46 @@ jobs:
               fi
             fi
           fi
+          
+      - name: NoMount
+        if: ${{ inputs.add_nomount }}
+        run: |
+          echo ""
+          echo "=== NoMount patch ==="
+          cd "$KERNEL_ROOT/common" # cd "$CONFIG/common"
+          if [ "${{ inputs.cancel_susfs }}" == "true" ]; then
+            echo "  no susfs"
+            NOMOUNT_PATCH="nomount-kernel-5.10.patch"
+          else
+            echo "  with susfs"
+            NOMOUNT_PATCH="nomount-susfs-kernel-5.10.patch"
+          fi
+          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/master/patches/$NOMOUNT_PATCH" -o nomount.patch
+          chmod 777 nomount.patch
+          echo "Applying..."
+          patch -p1 < nomount.patch # > patch_nomount_log.txt 2>&1
+          #NOMOUNT_PATCH_EXIT_CODE=$?
+          #if [ $NOMOUNT_PATCH_EXIT_CODE -ne 0 ]; then
+          #  echo "ERROR nomount patch: $NOMOUNT_PATCH_EXIT_CODE"
+          #else
+          NAME_INFO="${{ env.NAME_INFO }}_NoMount"
+          echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
+          echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
+          #fi
+          CONFIG_FILE="$DEFCONFIG"
+          echo "CONFIG_NOMOUNT=y" >> "$CONFIG_FILE"
+
+          NAME_INFO="_NoMount" # "${{ env.NAME_INFO }}"
+          if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
+          #if [ "${{ inputs.cancel_susfs }}" == "false" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
+          if [ "${{ inputs.use_zram }}" == "true" ]; then NAME_INFO="${NAME_INFO}_zram"; fi
+          if [ "${{ inputs.use_bbg }}" == "true" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
+          if [ "${{ inputs.use_kpm }}" == "true" ]; then NAME_INFO="${NAME_INFO}_kpm"; fi
+          #if [ "${{ inputs.enable_tmpfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_tmpfs"; fi
+          if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_tmpfs"; fi
+          if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
+          echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
+          echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
 
       # ==================== Unicode 绕过修复 ====================
       # 修复 Unicode 零宽字符绕过检测的问题
@@ -909,7 +954,7 @@ jobs:
       - name: 创建 AnyKernel3 压缩包
         run: |
           cd $ANYKERNEL3
-          ZIP_NAME="${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}-AnyKernel3.zip"
+          ZIP_NAME="${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}${{ env.NAME_INFO }}-AnyKernel3.zip"
           mv ../Image ./Image
           zip -r "../$ZIP_NAME" ./*
 
@@ -937,7 +982,7 @@ jobs:
           # 创建普通 boot.img
           $MKBOOTIMG --header_version 4 --kernel Image --output boot.img --ramdisk out/ramdisk --os_version 12.0.0 --os_patch_level "${{ inputs.os_patch_level }}"
           $AVBTOOL add_hash_footer --partition_name boot --partition_size $((64 * 1024 * 1024)) --image boot.img --algorithm SHA256_RSA2048 --key $BOOT_SIGN_KEY_PATH
-          cp ./boot.img ../${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}-boot.img
+          cp ./boot.img ../${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}${{ env.NAME_INFO }}-boot.img
 
           # 创建 gzip 压缩的 boot.img
           $MKBOOTIMG --header_version 4 --kernel Image.gz --output boot-gz.img --ramdisk out/ramdisk --os_version 12.0.0 --os_patch_level "${{ inputs.os_patch_level }}"
@@ -1004,7 +1049,7 @@ jobs:
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.ksu_variant }}_kernel-${{ env.CONFIG }}
+          name: ${{ inputs.ksu_variant }}_kernel-${{ env.CONFIG }}${{ env.NAME_INFO }}
           path: |
             *AnyKernel3.zip
             *.img
