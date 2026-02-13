@@ -118,6 +118,7 @@ jobs:
       use_kpm: ${{ inputs.use_kpm }}
       supp_op: false
       enable_susfs: ${{ !inputs.cancel_susfs }}
+      add_nomount: ${{ inputs.add_nomount }}
 
   # 仅在直接触发时运行，从 main.yml 调用时跳过
   get-ksu-manager:
