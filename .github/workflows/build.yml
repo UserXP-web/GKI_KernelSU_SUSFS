@@ -631,7 +631,58 @@ jobs:
               fi
             fi
           fi
-          
+
+      - name: Enable manual_hook when disabling SUSFS (strictly checked version)
+        if: !inputs.enable_susfs  && inputs.ksu_variant == 'ReSukiSU'
+        run: |
+          cd $KERNEL_ROOT/common # cd "$CONFIG/common"
+          echo "正在应用 Manual Hook 补丁"
+
+          PATCH="$GITHUB_WORKSPACE/patches/resukisu_manual_hooks.patch"
+
+          # 检查文件是否存在
+          if [ ! -f "$PATCH" ]; then
+              echo "Patch file not found: $PATCH"
+              exit 1
+          fi
+
+          # 执行 Patch 并捕获所有输出
+          set +e
+
+          echo "Executing patch 命令..."
+
+          patch -p1 -F 3 --fuzz=5 < "$PATCH" > patch_log.txt 2>&1
+
+          # 记录 patch 命令本身的退出代码
+          PATCH_EXIT_CODE=$?
+
+          set -e
+
+          # 显示完整日志
+          echo "====================== PATCH OUTPUT START ======================"
+          if [ -f patch_log.txt ]; then
+              cat patch_log.txt
+          else
+              echo "无日志输出"
+          fi
+          echo "====================== PATCH OUTPUT END   ======================"
+
+          if [ $PATCH_EXIT_CODE -ne 0 ]; then
+              echo "Patch The command returned an error code. ($PATCH_EXIT_CODE)"
+              exit 1
+          elif grep -qi "FAILED" patch_log.txt; then
+              echo "检测到 Hunk FAILED (补丁未能应用)"
+              exit 1
+          elif grep -qi "malformed" patch_log.txt; then
+              echo "检测到 malformed patch (补丁格式/行号/空行错误)"
+              exit 1
+          elif grep -qi "unexpected end" patch_log.txt; then
+              echo "检测到 unexpected end (补丁文件可能不完整)"
+              exit 1
+          else
+              echo "Manual Hook 补丁已成功应用"
+          fi
+
       # ==================== Unicode 绕过修复 ====================
       # 修复 Unicode 零宽字符绕过检测的问题
       - name: 应用 Unicode 绕过修复
