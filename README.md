@@ -12,7 +12,9 @@
 [**English**](README-EN.md) | 简体中文
 
 ---
-## ⚠️本仓库分叉自zzh20188
+
+## ⚠️ 仓库须知 ⚠️
+** 本仓库分叉自 [zzh20188/GKI_KernelSU_SUSFS](https://github.com/zzh20188/GKI_KernelSU_SUSFS/)
 
 </div>
 
