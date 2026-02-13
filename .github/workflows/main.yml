@@ -42,7 +42,7 @@ on:
           - Official
           - Next
           - MKSU
-        default: SukiSU
+        default: ReSukiSU
       kernelsu_branch:
         description: "KSU 分支"
         type: choice
@@ -71,7 +71,7 @@ on:
         type: boolean
         default: true
       cancel_susfs:
-        description: "禁用 SUSFS"
+        description: "Cancel SUSFS"
         type: boolean
         default: false
       add_nomount:
@@ -106,6 +106,7 @@ jobs:
   # ==================== 获取管理器 ====================
   # 下载最新的 KernelSU 管理器 APK 和 SUSFS 模块
   get-manager:
+    if: false
     uses: ./.github/workflows/get-manager.yml
     secrets: inherit
     with:
@@ -347,7 +348,7 @@ jobs:
 
       # ==================== 获取 SUSFS 提交信息 ====================
       # 获取各版本 SUSFS 的 Git 提交信息
-      - name: 获取 SUSFS 提交信息
+      - name: Retrieving SUSFS Submission Information
         run: |
           GITLAB_OWNER="simonpunk"
           GITLAB_REPO="susfs4ksu"
@@ -369,7 +370,7 @@ jobs:
 
       # ==================== 生成发布说明 ====================
       # 创建包含详细信息的发布说明文档
-      - name: 生成发布说明
+      - name: Generate release notes
         run: |
           cat > release_body.md << EOF
           ## 📦 本次发布内容 / Release Contents
@@ -465,8 +466,8 @@ jobs:
           EOF
 
       # ==================== 生成版本标签 ====================
-      # 根据 SUSFS 版本生成递增的发布标签
-      - name: 生成版本标签
+      # Generate incremental release tags based on the SUSFS version.
+      - name: Generate version tags
         run: |
           # 获取 SUSFS 版本，如果 get-manager 被跳过则使用默认值
           SUS_VERSION="${{ needs.get-manager.outputs.susVer }}"
@@ -509,7 +510,7 @@ jobs:
             $PRERELEASE_FLAG
 
       # ==================== 上传管理器和模块 ====================
-      - name: 上传管理器和 SUSFS 模块
+      - name: Upload Manager and SUSFS Module
         continue-on-error: true
         run: |
           echo "准备上传 APK 与 SUSFS 模块..."
