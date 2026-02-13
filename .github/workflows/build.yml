@@ -740,7 +740,8 @@ jobs:
           ###########cd "$KERNEL_ROOT/common" # cd "$CONFIG/common"
           if [ "${{ inputs.enable_susfs }}" == "false" ]; then
             echo "  no susfs"
-            NOMOUNT_PATCH="nomount-kernel-5.10.patch"
+            #NOMOUNT_PATCH="nomount-kernel-5.10.patch"
+            NOMOUNT_PATCH="nomount-susfs-kernel-5.10.patch"
           else
             echo "  with susfs"
             NOMOUNT_PATCH="nomount-susfs-kernel-5.10.patch"
