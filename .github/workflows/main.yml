@@ -47,6 +47,16 @@ on:
           - BBG
           - None
         default: WKSU+SUSFS+BBG
+      add_nomount:
+        description: 'Add NoMount support'
+        required: false
+        type: boolean
+        default: false
+      add_nomountX:
+        description: 'Add NoMount support (saved/working)'
+        required: false
+        type: boolean
+        default: false
   push:
 
 jobs:
@@ -65,6 +75,8 @@ jobs:
       ksu_commit: ${{ inputs.ksu_commit || '' }}
       build_bypass: ${{ inputs.build_bypass || false }}
       feature_set: ${{ inputs.feature_set || 'WKSU+SUSFS+BBG' }}
+      add_nomount: ${{ inputs.add_nomount }}
+      add_nomountX: ${{ inputs.add_nomountX }}
 
   build-a13-5-10:
     if: ${{ inputs.kernel_build_version == 'all' || inputs.kernel_build_version == 'a13-5-10' }}
