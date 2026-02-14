@@ -42,6 +42,7 @@ on:
         type: choice
         options:
           - WKSU+SUSFS+BBG
+          - WKSU+SUSFS
           - WKSU+BBG
           - WKSU
           - BBG
