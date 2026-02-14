@@ -686,19 +686,19 @@ jobs:
           echo ""
           echo "=== NoMount patch ==="
           ###########cd "$KERNEL_ROOT/common" # cd "$CONFIG/common"
-          if [ "${{ inputs.enable_susfs }}" == "false" ]; then
-            echo "  no susfs"
-            NOMOUNT_PATCH="nomount-kernel-5.10.patch"
-          else
-            echo "  with susfs"
-            NOMOUNT_PATCH="nomount-susfs-kernel-5.10.patch"
+          if [ "${{ inputs.enable_susfs }}" == "false" ]; then            
+            NOMOUNT_PATCH="nomount-kernel-${{ inputs.kernel_version }}.patch"
+            echo "  no susfs: $NOMOUNT_PATCH"
+          else            
+            NOMOUNT_PATCH="nomount-susfs-kernel-${{ inputs.kernel_version }}.patch"
+            echo "  with susfs: $NOMOUNT_PATCH"
           fi
           if [ inputs.add_nomountX ]; then
-            echo "<> saved/working patch"
+            echo "  <> saved/working patch"
             cp "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" nomount.patch
           else            
             MASTER_EXP="master" # master experimental
-            echo "<> ORIGinal/latest patch ($MASTER_EXP)"
+            echo "  <> ORIGinal/latest patch ($MASTER_EXP)"
             curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
           fi
           chmod 777 nomount.patch
