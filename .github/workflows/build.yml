@@ -30,6 +30,14 @@ on:
       build_bypass:
         required: true
         type: boolean
+      add_nomount:
+        required: false
+        type: boolean
+        default: false
+      add_nomountX:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-gki:
@@ -206,6 +214,65 @@ jobs:
         kernel_root: ${{ env.KERNEL_ROOT }}
         defconfig_fragment: ${{ env.DEFCONFIG_FRAGMENT }}
 
+    - name: Check if SUSFS
+      if: contains(inputs.feature_set, 'SUSFS')
+      run: echo "WITH_SUSFS=y" >> $GITHUB_ENV
+    - name: NoMount
+      if: inputs.add_nomount || inputs.add_nomountX
+      working-directory: ${{ env.KERNEL_ROOT }}/common
+      run: |
+        echo ""
+        echo "=== NoMount patch ==="
+        ###########cd "$KERNEL_ROOT/common" # cd "$CONFIG/common"
+        if [ "${{ env.WITH_SUSFS }}" == "" ]; then           
+          NOMOUNT_PATCH="nomount-kernel-${{ inputs.kernel_version }}.patch"
+          echo "  no susfs: $NOMOUNT_PATCH"
+        else            
+          NOMOUNT_PATCH="nomount-susfs-kernel-${{ inputs.kernel_version }}.patch"
+          echo "  with susfs: $NOMOUNT_PATCH"
+        fi
+        if [ "${{ inputs.add_nomountX }}" == "true" ]; then
+          IS_X="X"
+          echo "  <> saved/working patch"
+          cp "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" nomount.patch
+        else
+          IS_X=""
+          MASTER_EXP="master" # master experimental
+          echo "  <> ORIGinal/latest patch ($MASTER_EXP)"
+          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
+        fi
+        chmod 777 nomount.patch
+        echo "Applying..."
+        patch -p1 < nomount.patch # > patch_nomount_log.txt 2>&1          
+        #NOMOUNT_PATCH_EXIT_CODE=$?
+        echo "=== END NoMount patch ==="
+        #if [ $NOMOUNT_PATCH_EXIT_CODE -ne 0 ]; then
+        #  echo "ERROR nomount patch: $NOMOUNT_PATCH_EXIT_CODE"
+        #else
+        NAME_INFO="${{ env.NAME_INFO }}_NoMount$IS_X"
+        echo "WILD NAME_INFO=$NAME_INFO"
+        echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
+        #fi
+        
+        echo "CONFIG_NOMOUNT=y" >> "${{ env.DEFCONFIG_FRAGMENT }}"
+        #CONFIG_FILE="$DEFCONFIG"
+        #echo "CONFIG_NOMOUNT=y" >> "$CONFIG_FILE"
+
+    - name: NAME_INFO Config
+      run: |
+        NAME_INFO="${{ env.NAME_INFO }}"
+        #if [ "${{ inputs.bypass_unicode }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
+        #if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
+        #if [ "${{ inputs.use_zram }}" == "true" ]; then NAME_INFO="${NAME_INFO}_zram"; fi
+        #if [ "${{ inputs.use_bbg }}" == "true" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
+        #if [ "${{ inputs.use_kpm }}" == "true" ]; then NAME_INFO="${NAME_INFO}_kpm"; fi
+        #if [ "${{ inputs.enable_tmpfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_tmpfs"; fi
+        NAME_INFO="${NAME_INFO}_tmpfs"
+        if [ "${{ env.WITH_SUSFS }}" == "y" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
+        echo "WILD NAME_INFO=$NAME_INFO"
+        echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
+
+
     - name: Apply Module Check Bypass
       if: ${{ matrix.build_type == 'Bypass' || matrix.build_type == 'Hakan' }}
       run: |
@@ -257,7 +324,7 @@ jobs:
         cat >> "${{ env.DEFCONFIG_FRAGMENT }}" << 'EOF'
         # KernelSU Configuration
         CONFIG_KSU=y
-        CONFIG_KSU_SUSFS=y
+        #CONFIG_KSU_SUSFS=y
 
         # KPatch Next Support
         CONFIG_KALLSYMS=y
@@ -268,6 +335,12 @@ jobs:
         CONFIG_TMPFS_POSIX_ACL=y
         
         EOF
+
+        if [ "${{ env.WITH_SUSFS }}" == "y" ]; then
+          echo "CONFIG_KSU_SUSFS=y" >> "${{ env.DEFCONFIG_FRAGMENT }}"
+        else
+          echo "CONFIG_KSU_SUSFS=n" >> "${{ env.DEFCONFIG_FRAGMENT }}"
+        fi
 
         # Networking Configuration
         #CONFIG_IP_NF_TARGET_TTL=y
