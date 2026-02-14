@@ -72,6 +72,7 @@
 
 - SUSFS: https://gitlab.com/simonpunk/susfs4ksu
 - SukiSU: https://github.com/SukiSU-Ultra/SukiSU-Ultra/commits/builtin/
+- 请注意：ReSukiSU请使用原版SUSFS而不是SukiSU的SUSFS分支
 
 以 SUSFS 为例，先选择分支，再复制对应提交的哈希值：
 
