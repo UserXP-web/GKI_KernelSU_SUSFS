@@ -62,7 +62,10 @@ on:
         type: boolean
         default: true
       add_nomount:
-        description: 'Add NoMount support'
+        required: false
+        type: boolean
+        default: false
+      add_nomountX:
         required: false
         type: boolean
         default: false
@@ -677,7 +680,7 @@ jobs:
           patch -p1 -F 3 < lz4k_oplus.patch || true
 
       - name: NoMount
-        if: ${{ inputs.add_nomount }}
+        if: inputs.add_nomount || inputs.add_nomountX
         working-directory: ${{ env.KERNEL_ROOT }}/common
         run: |
           echo ""
@@ -690,8 +693,12 @@ jobs:
             echo "  with susfs"
             NOMOUNT_PATCH="nomount-susfs-kernel-5.10.patch"
           fi
-          MASTER_EXP="master" # master experimental
-          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
+          if [ inputs.add_nomountX ]; then            
+            curl -LSs "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" -o nomount.patch
+          else
+            MASTER_EXP="master" # master experimental          
+            curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
+          fi
           chmod 777 nomount.patch
           echo "Applying..."
           patch -p1 < nomount.patch # > patch_nomount_log.txt 2>&1          
@@ -707,7 +714,7 @@ jobs:
           CONFIG_FILE="$DEFCONFIG"
           echo "CONFIG_NOMOUNT=y" >> "$CONFIG_FILE"
 
-          NAME_INFO="_NoMount" # "${{ env.NAME_INFO }}"
+          NAME_INFO="${{ env.NAME_INFO }}"
           #if [ "${{ inputs.bypass_unicode }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
           if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
           if [ "${{ inputs.use_zram }}" == "true" ]; then NAME_INFO="${NAME_INFO}_zram"; fi
