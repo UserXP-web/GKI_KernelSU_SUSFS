@@ -745,7 +745,8 @@ jobs:
             echo "  with susfs"
             NOMOUNT_PATCH="nomount-susfs-kernel-5.10.patch"
           fi
-          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/master/patches/$NOMOUNT_PATCH" -o nomount.patch
+          MASTER_EXP="master" # master experimental
+          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
           chmod 777 nomount.patch
           echo "Applying..."
           patch -p1 < nomount.patch # > patch_nomount_log.txt 2>&1          
