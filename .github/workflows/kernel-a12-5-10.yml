@@ -56,6 +56,11 @@ on:
         required: false
         type: boolean
         default: false
+      add_nomountX:
+        description: 'Add NoMount support (saved/working)'
+        required: false
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       kernelsu_variant:
@@ -80,6 +85,10 @@ on:
         required: false
         type: boolean
       add_nomount:
+        required: false
+        type: boolean
+        default: false
+      add_nomountX:
         required: false
         type: boolean
         default: false
@@ -119,6 +128,7 @@ jobs:
       supp_op: false
       enable_susfs: ${{ !inputs.cancel_susfs }}
       add_nomount: ${{ inputs.add_nomount }}
+      add_nomountX: ${{ inputs.add_nomountX }}
 
   # 仅在直接触发时运行，从 main.yml 调用时跳过
   get-ksu-manager:
