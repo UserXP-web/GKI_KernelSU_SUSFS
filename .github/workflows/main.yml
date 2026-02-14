@@ -79,6 +79,11 @@ on:
         required: false
         type: boolean
         default: false
+      add_nomountX:
+        description: 'Add NoMount support (saved/working)'
+        required: false
+        type: boolean
+        default: false
 
       # ==================== 构建版本选择 ====================
       build_a12_5_10:
@@ -126,6 +131,7 @@ jobs:
       use_kpm: ${{ inputs.use_kpm }}
       cancel_susfs: ${{ inputs.cancel_susfs }}
       add_nomount: ${{ inputs.add_nomount }}
+      add_nomountX: ${{ inputs.add_nomountX }}
       called_from_main: true
 
   # ==================== Android 13 - 5.15 构建 ====================
