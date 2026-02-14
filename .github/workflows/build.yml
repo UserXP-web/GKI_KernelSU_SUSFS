@@ -750,7 +750,7 @@ jobs:
             NOMOUNT_PATCH="nomount-susfs-kernel-${{ inputs.kernel_version }}.patch"
             echo "  with susfs: $NOMOUNT_PATCH"
           fi
-          if [ inputs.add_nomountX ]; then
+          if [ "${{ inputs.add_nomountX }}" == "true" ]; then
             IS_X="X"
             echo "  <> saved/working patch"
             cp "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" nomount.patch
