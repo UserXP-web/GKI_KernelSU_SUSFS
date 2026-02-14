@@ -693,10 +693,12 @@ jobs:
             echo "  with susfs"
             NOMOUNT_PATCH="nomount-susfs-kernel-5.10.patch"
           fi
-          if [ inputs.add_nomountX ]; then            
+          if [ inputs.add_nomountX ]; then
+            echo "<> saved/working patch"
             curl -LSs "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" -o nomount.patch
-          else
-            MASTER_EXP="master" # master experimental          
+          else            
+            MASTER_EXP="master" # master experimental
+            echo "<> ORIGinal/latest patch ($MASTER_EXP)"
             curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
           fi
           chmod 777 nomount.patch
@@ -714,6 +716,8 @@ jobs:
           CONFIG_FILE="$DEFCONFIG"
           echo "CONFIG_NOMOUNT=y" >> "$CONFIG_FILE"
 
+      - name: NAME_INFO Config
+        run: |
           NAME_INFO="${{ env.NAME_INFO }}"
           #if [ "${{ inputs.bypass_unicode }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
           if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
