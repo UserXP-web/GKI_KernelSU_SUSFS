@@ -633,7 +633,7 @@ jobs:
           fi
 
       - name: Enable manual_hook when disabling SUSFS (strictly checked version)
-        if: ( !inputs.enable_susfs ) && ( inputs.ksu_variant == 'ReSukiSU' )
+        if: ( false ) && ( !inputs.enable_susfs ) && ( inputs.ksu_variant == 'ReSukiSU' )
         run: |
           cd $KERNEL_ROOT/common # cd "$CONFIG/common"
           echo "正在应用 Manual Hook 补丁"
