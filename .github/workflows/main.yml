@@ -36,7 +36,7 @@ on:
           - lts
           - custom
           - testing
-        default: custom
+        default: a12-5-10
       feature_set:
         description: "Feature Set"
         type: choice
