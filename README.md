@@ -51,7 +51,7 @@
 
 ---
 
-## 🐱 谷歌GKI发布地址：https://source.android.com/docs/core/architecture/kernel/gki-release-builds?hl=zh-cn
+## 🐱 谷歌GKI发布地址：[点击跳转](https://source.android.com/docs/core/architecture/kernel/gki-release-builds?hl=zh-cn)
 
 ---
 
