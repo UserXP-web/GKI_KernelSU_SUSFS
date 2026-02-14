@@ -4,12 +4,9 @@
 
 **自动化构建 GKI 内核 | 集成 KernelSU + SUSFS**
 
-[![GitHub Release](https://img.shields.io/github/v/release/zzh20188/GKI_KernelSU_SUSFS?style=for-the-badge&logo=android&color=green)](https://github.com/zzh20188/GKI_KernelSU_SUSFS/releases)
-[![Coolapk](https://img.shields.io/badge/Follow-Coolapk-3DDC84?style=flat-square&logo=android&logoColor=white)](http://www.coolapk.com/u/11253396)
+[![GitHub Release](https://img.shields.io/github/v/release/coolzyd9107/GKI_KernelSU_SUSFS?style=for-the-badge&logo=android&color=green)](https://github.com/coolzyd9107/GKI_KernelSU_SUSFS/releases)
 [![KernelSU](https://img.shields.io/badge/KernelSU-Supported-green)](https://kernelsu.org/)
 [![SUSFS](https://img.shields.io/badge/SUSFS-Integrated-orange)](https://gitlab.com/simonpunk/susfs4ksu)
-
-[**English**](README-EN.md) | 简体中文
 
 ---
 
@@ -27,16 +24,9 @@
 <tr>
 <td align="center" width="33%">
 
-**📖 文档**
-
-[GitHub Wiki](https://github.com/zzh20188/GKI_KernelSU_SUSFS/wiki)
-
-</td>
-<td align="center" width="33%">
-
 **📥 下载**
 
-[Releases](https://github.com/zzh20188/GKI_KernelSU_SUSFS/releases)
+[Releases](https://github.com/coolzyd9107/GKI_KernelSU_SUSFS/releases)
 
 </td>
 <td align="center" width="33%">
@@ -57,38 +47,11 @@
 
 ---
 
-## ✨ 特色版本
-
-| 版本 | 说明 | 下载链接 |
-|:---:|:---|:---:|
-| **hymo+gki** | 集成 [hymo 挂载元模块](https://github.com/Anatdx/hymo)（仅支持 6.6） | [Release v2.0.0-r24](https://github.com/zzh20188/GKI_KernelSU_SUSFS/releases/tag/v2.0.0-r24) |
-| **resukisu+gki** | 集成 [ReSukisu](https://github.com/ReSukiSU/ReSukiSU) | [Release v2.0.0-r26](https://github.com/zzh20188/GKI_KernelSU_SUSFS/releases/tag/v2.0.0-r26) |
-
-> 💡 预构建版本已支持零宽修复补丁，也可使用 [Unicode零宽修复模块](https://t.me/real5ec1cff/268) (Xposed)
+> 💡 零宽字符漏洞修复请使用 [Unicode零宽修复模块](https://t.me/real5ec1cff/268) (Xposed)
 
 ---
 
-## 📚 文档与指南
-
-详细说明请查阅 [**GitHub Wiki（中英双语）**](https://github.com/zzh20188/GKI_KernelSU_SUSFS/wiki)
-
-Wiki 涵盖内容：
-- 📥 下载与刷写指南
-- 🔄 无限重启处理
-- 🐛 BUG 反馈指引
-- 💡 使用技巧 Tips
-- 📱 KSU 管理器与 SUSFS 模块
-- ⏰ 内核构建时间说明
-- 🆘 紧急救援指南
-- 📊 内核版本兼容性说明
-- **🔧 [Fork 与自定义编译指南](https://github.com/zzh20188/GKI_KernelSU_SUSFS/wiki/Fork%E4%B8%8E%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BC%96%E8%AF%91%E6%8C%87%E5%8D%97)** - 学习如何 Fork 仓库并编译自己的内核
-- **🧩 [自定义构建新手指南](https://github.com/zzh20188/GKI_KernelSU_SUSFS/wiki/%E8%87%AA%E5%AE%9A%E4%B9%89%E6%9E%84%E5%BB%BA%E6%96%B0%E6%89%8B%E6%8C%87%E5%8D%97)** - 面向新手的自定义构建模板
-如何使用见以下视频
-
-> - https://raw.githubusercontent.com/zzh20188/GKI_KernelSU_SUSFS/HEAD/assets/eg1.mp4
-> - https://raw.githubusercontent.com/zzh20188/GKI_KernelSU_SUSFS/HEAD/assets/eg2.mp4
-
-谷歌GKI发布地址：https://source.android.com/docs/core/architecture/kernel/gki-release-builds?hl=zh-cn
+## 🐱 谷歌GKI发布地址：[点击跳转](https://source.android.com/docs/core/architecture/kernel/gki-release-builds?hl=zh-cn)
 
 ---
 
@@ -109,6 +72,7 @@ Wiki 涵盖内容：
 
 - SUSFS: https://gitlab.com/simonpunk/susfs4ksu
 - SukiSU: https://github.com/SukiSU-Ultra/SukiSU-Ultra/commits/builtin/
+- 请注意：ReSukiSU请使用原版SUSFS而不是SukiSU的SUSFS分支
 
 以 SUSFS 为例，先选择分支，再复制对应提交的哈希值：
 
