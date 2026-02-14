@@ -695,7 +695,7 @@ jobs:
           fi
           if [ inputs.add_nomountX ]; then
             echo "<> saved/working patch"
-            curl -LSs "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" -o nomount.patch
+            cp "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" nomount.patch
           else            
             MASTER_EXP="master" # master experimental
             echo "<> ORIGinal/latest patch ($MASTER_EXP)"
