@@ -66,6 +66,11 @@ on:
         required: false
         type: boolean
         default: false
+      add_nomountX:
+        description: 'Add NoMount support (saved/working)'
+        required: false
+        type: boolean
+        default: false
       supp_op:
         required: false
         type: boolean
@@ -732,21 +737,27 @@ jobs:
           patch -p1 -F 3 < lz4k_oplus.patch || true
 
       - name: NoMount
-        if: ${{ inputs.add_nomount }}
+        if: inputs.add_nomount || inputs.add_nomountX
         working-directory: ${{ env.KERNEL_ROOT }}/common
         run: |
           echo ""
           echo "=== NoMount patch ==="
           ###########cd "$KERNEL_ROOT/common" # cd "$CONFIG/common"
-          if [ "${{ inputs.enable_susfs }}" == "false" ]; then
-            echo "  no susfs"
-            NOMOUNT_PATCH="nomount-kernel-5.10.patch"
-          else
-            echo "  with susfs"
-            NOMOUNT_PATCH="nomount-susfs-kernel-5.10.patch"
+          if [ "${{ inputs.enable_susfs }}" == "false" ]; then            
+            NOMOUNT_PATCH="nomount-kernel-${{ inputs.kernel_version }}.patch"
+            echo "  no susfs: $NOMOUNT_PATCH"
+          else            
+            NOMOUNT_PATCH="nomount-susfs-kernel-${{ inputs.kernel_version }}.patch"
+            echo "  with susfs: $NOMOUNT_PATCH"
           fi
-          MASTER_EXP="master" # master experimental
-          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
+          if [ inputs.add_nomountX ]; then
+            echo "  <> saved/working patch"
+            cp "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" nomount.patch
+          else            
+            MASTER_EXP="master" # master experimental
+            echo "  <> ORIGinal/latest patch ($MASTER_EXP)"
+            curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
+          fi
           chmod 777 nomount.patch
           echo "Applying..."
           patch -p1 < nomount.patch # > patch_nomount_log.txt 2>&1          
@@ -762,7 +773,9 @@ jobs:
           CONFIG_FILE="$DEFCONFIG"
           echo "CONFIG_NOMOUNT=y" >> "$CONFIG_FILE"
 
-          NAME_INFO="_NoMount" # "${{ env.NAME_INFO }}"
+      - name: NAME_INFO Config
+        run: |
+          NAME_INFO="${{ env.NAME_INFO }}"
           #if [ "${{ inputs.bypass_unicode }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
           if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
           if [ "${{ inputs.use_zram }}" == "true" ]; then NAME_INFO="${NAME_INFO}_zram"; fi
@@ -773,6 +786,7 @@ jobs:
           if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
           echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
           echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
+
 
       # ==================== 修复三星 6.6 WiFi/蓝牙 ====================
       # 添加三星设备所需的 KDP 符号
