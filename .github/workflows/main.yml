@@ -235,7 +235,8 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    if: ${{ always() && inputs.release_type != 'Actions' }}
+    #if: ${{ always() && inputs.release_type != 'Actions' }}
+    if: false
     permissions:
       contents: write
     needs:
@@ -420,7 +421,8 @@ jobs:
 
   notify:
     needs: release
-    if: ${{ always() && (inputs.release_type == 'Actions' || needs.release.result == 'success') }}
+    #if: ${{ always() && (inputs.release_type == 'Actions' || needs.release.result == 'success') }}
+    if: false
     uses: ./.github/workflows/notify.yml
     secrets: inherit
     with:
