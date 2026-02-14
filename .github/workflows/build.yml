@@ -751,9 +751,11 @@ jobs:
             echo "  with susfs: $NOMOUNT_PATCH"
           fi
           if [ inputs.add_nomountX ]; then
+            IS_X="X"
             echo "  <> saved/working patch"
             cp "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" nomount.patch
-          else            
+          else
+            IS_X=""
             MASTER_EXP="master" # master experimental
             echo "  <> ORIGinal/latest patch ($MASTER_EXP)"
             curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
@@ -766,7 +768,7 @@ jobs:
           #if [ $NOMOUNT_PATCH_EXIT_CODE -ne 0 ]; then
           #  echo "ERROR nomount patch: $NOMOUNT_PATCH_EXIT_CODE"
           #else
-          NAME_INFO="${{ env.NAME_INFO }}_NoMount"
+          NAME_INFO="${{ env.NAME_INFO }}_NoMount$IS_X"
           echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
           echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
           #fi
