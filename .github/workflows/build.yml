@@ -151,7 +151,7 @@ jobs:
         echo "FILE_NAME=$ARTIFACT_BASE" >> $GITHUB_ENV
 
         echo "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
-        cat "${{ env.FILE_NAME }}"
+        cat "$ARTIFACT_BASE"
 
     - name: Apply glibc 2.38 Compatibility Fix
       if: false
