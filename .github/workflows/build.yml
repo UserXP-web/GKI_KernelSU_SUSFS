@@ -233,17 +233,17 @@ jobs:
         fi
         if [ "${{ inputs.add_nomountX }}" == "true" ]; then
           IS_X="X"
-          echo "  <> saved/working patch"
+          echo "  <> saved/old patch"
           cp "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" nomount.patch
         else
           IS_X=""
           MASTER_EXP="master" # master experimental
-          echo "  <> ORIGinal/latest patch ($MASTER_EXP)"
+          echo "  <> LIVE/latest patch ($MASTER_EXP)"
           curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
         fi
         chmod 777 nomount.patch
         echo "Applying..."
-        patch -p1 < nomount.patch # > patch_nomount_log.txt 2>&1          
+        patch -p1 --fuzz=10 < nomount.patch # > patch_nomount_log.txt 2>&1          
         #NOMOUNT_PATCH_EXIT_CODE=$?
         echo "=== END NoMount patch ==="
         #if [ $NOMOUNT_PATCH_EXIT_CODE -ne 0 ]; then
