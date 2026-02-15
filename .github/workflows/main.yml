@@ -54,7 +54,7 @@ on:
         type: boolean
         default: false
       add_nomountX:
-        description: 'Add NoMount support (saved/working)'
+        description: 'Add NoMount support (saved/old)'
         required: false
         type: boolean
         default: false
