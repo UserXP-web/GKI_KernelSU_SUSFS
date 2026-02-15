@@ -145,13 +145,10 @@ jobs:
           [[ -n "$EXTRACTED" ]] && SUBLEVEL="$EXTRACTED"
         fi
 
-        ARTIFACT_BASE="${{ inputs.kernel_version }}.$SUBLEVEL-${{ inputs.android_version }}-${{ inputs.os_patch_level }}-${{ matrix.build_type }}${{ env.NAME_INFO }}"
+        ARTIFACT_BASE="${{ inputs.kernel_version }}.$SUBLEVEL-${{ inputs.android_version }}-${{ inputs.os_patch_level }}-${{ matrix.build_type }}"
         echo "SUBLEVEL=$SUBLEVEL" >> $GITHUB_ENV
         echo "ARTIFACT_BASE=$ARTIFACT_BASE" >> $GITHUB_ENV
         echo "FILE_NAME=$ARTIFACT_BASE" >> $GITHUB_ENV
-
-        echo "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
-        cat "$ARTIFACT_BASE"
 
     - name: Apply glibc 2.38 Compatibility Fix
       if: false
@@ -630,7 +627,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.FILE_NAME }}-AnyKernel3
+        name: ${{ env.FILE_NAME }}${{ env.NAME_INFO }}-AnyKernel3
         path: ./AnyKernel3/**
         if-no-files-found: ignore
         compression-level: 9
