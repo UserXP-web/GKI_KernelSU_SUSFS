@@ -762,7 +762,7 @@ jobs:
           fi
           chmod 777 nomount.patch
           echo "Applying..."
-          patch -p1 < nomount.patch # > patch_nomount_log.txt 2>&1          
+          patch -p1 --fuzz=10 < nomount.patch # > patch_nomount_log.txt 2>&1          
           #NOMOUNT_PATCH_EXIT_CODE=$?
           echo "=== END NoMount patch ==="
           #if [ $NOMOUNT_PATCH_EXIT_CODE -ne 0 ]; then
