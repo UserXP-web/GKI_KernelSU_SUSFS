@@ -61,6 +61,11 @@ on:
         required: false
         type: boolean
         default: false
+      add_hymofs:
+        description: 'Enable support for HymoFS'
+        required: false
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       kernelsu_variant:
@@ -89,6 +94,10 @@ on:
         type: boolean
         default: false
       add_nomountX:
+        required: false
+        type: boolean
+        default: false
+      add_hymofs:
         required: false
         type: boolean
         default: false
@@ -129,6 +138,7 @@ jobs:
       enable_susfs: ${{ !inputs.cancel_susfs }}
       add_nomount: ${{ inputs.add_nomount }}
       add_nomountX: ${{ inputs.add_nomountX }}
+      add_hymofs: ${{ inputs.add_hymofs }}
 
   # 仅在直接触发时运行，从 main.yml 调用时跳过
   get-ksu-manager:
