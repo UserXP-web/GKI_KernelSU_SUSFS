@@ -17,7 +17,7 @@ on:
           - MKSU
           - SukiSU
           - ReSukiSU
-        default: SukiSU
+        default: ReSukiSU
       kernelsu_branch:
         description: "KSU 分支"
         required: true
@@ -51,6 +51,21 @@ on:
         required: true
         type: boolean
         default: false
+      add_nomount:
+        description: 'Add NoMount support'
+        required: false
+        type: boolean
+        default: false
+      add_nomountX:
+        description: 'Add NoMount support (saved/old)'
+        required: false
+        type: boolean
+        default: false
+      add_hymofs:
+        description: 'Enable support for HymoFS'
+        required: false
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       kernelsu_variant:
@@ -74,6 +89,18 @@ on:
       cancel_susfs:
         required: false
         type: boolean
+      add_nomount:
+        required: false
+        type: boolean
+        default: false
+      add_nomountX:
+        required: false
+        type: boolean
+        default: false
+      add_hymofs:
+        required: false
+        type: boolean
+        default: false
       called_from_main:
         description: "是否从 main.yml 调用（内部使用）"
         required: false
@@ -87,42 +114,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - sub_level: "66"
-            os_patch_level: "2022-01"
-            revision: "r11"
-          - sub_level: "81"
-            os_patch_level: "2022-03"
-            revision: "r11"
-          - sub_level: "101"
-            os_patch_level: "2022-04"
-            revision: "r28"
-          - sub_level: "136"
-            os_patch_level: "2022-11"
-            revision: "r15"
-          - sub_level: "168"
-            os_patch_level: "2023-04"
-            revision: "r9"
-          - sub_level: "177"
-            os_patch_level: "2023-07"
-            revision: "r3"
-          - sub_level: "198"
-            os_patch_level: "2024-01"
-            revision: "r17"
-          - sub_level: "209"
-            os_patch_level: "2024-05"
-            revision: "r13"
-          - sub_level: "218"
-            os_patch_level: "2024-08"
-            revision: "r14"
-          - sub_level: "226"
-            os_patch_level: "2024-11"
-            revision: "r8"
-          - sub_level: "246"
-            os_patch_level: "2025-12"
-            revision: "r1"
-          - sub_level: "X"
-            os_patch_level: "lts"
-            revision: "r1"
+          #- sub_level: "226"
+          #  os_patch_level: "2024-11"
+          #  revision: "r8"
+          - sub_level: "236"
+            os_patch_level: "2025-05"
+            revision: "r7"
     uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
@@ -137,12 +134,16 @@ jobs:
       use_zram: ${{ inputs.use_zram }}
       use_bbg: ${{ inputs.use_bbg }}
       use_kpm: ${{ inputs.use_kpm }}
+      add_nomount: ${{ inputs.add_nomount }}
+      add_nomountX: ${{ inputs.add_nomountX }}
+      add_hymofs: ${{ inputs.add_hymofs }}
       supp_op: false
       enable_susfs: ${{ !inputs.cancel_susfs }}
 
   # 仅在直接触发时运行，从 main.yml 调用时跳过
   get-ksu-manager:
-    if: ${{ !inputs.called_from_main }}
+    #if: ${{ !inputs.called_from_main }}
+    if: false
     uses: ./.github/workflows/get-manager.yml
     secrets: inherit
     with:
