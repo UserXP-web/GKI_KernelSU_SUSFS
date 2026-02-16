@@ -703,12 +703,12 @@ jobs:
           # HymoFS One-Line Setup Script
           # Usage: curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig with-susfs
           if [ "${{ inputs.enable_susfs }}" == "false" ]; then 
-            #curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
+            curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
           else
-            #curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
+            curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
           fi
-          curl -LSs "https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/android12_5.10/patch/hymofs.patch" -o hymofs.patch
-          patch -p1 --fuzz=3 < hymofs.patch
+          #curl -LSs "https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/android12_5.10/patch/hymofs.patch" -o hymofs.patch
+          #patch -p1 --fuzz=3 < hymofs.patch
           
           NAME_INFO="${{ env.NAME_INFO }}_hymofs"
           echo "@@@@@@@@@@@@@@@@@@@ NAME_INFO=$NAME_INFO"
