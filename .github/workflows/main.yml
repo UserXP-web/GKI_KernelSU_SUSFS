@@ -8,7 +8,7 @@
 # 4. 创建 GitHub Release (可选)
 # ========================================
 
-name: 构建内核
+name: Build the kernel
 
 # 并发控制：同一分支只运行一个实例，新运行会取消旧的
 concurrency:
@@ -53,7 +53,7 @@ on:
 
       # ==================== 可选配置 ====================
       version:
-        description: "自定义版本名 (可选)"
+        description: "Custom version name (optional)"
         type: string
         default: ""
         required: false
@@ -71,7 +71,7 @@ on:
         type: boolean
         default: true
       cancel_susfs:
-        description: "禁用 SUSFS"
+        description: "Cancel SUSFS"
         type: boolean
         default: false
       add_nomount:
@@ -108,7 +108,7 @@ on:
         type: boolean
         default: false
       build_all:
-        description: "构建全部版本"
+        description: "Build all versions"
         type: boolean
         default: false
 
