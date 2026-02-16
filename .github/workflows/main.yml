@@ -120,8 +120,9 @@ on:
 jobs:
   # ==================== 获取管理器 ====================
   # 下载最新的 KernelSU 管理器 APK 和 SUSFS 模块
-  get-manager:
+  get-manager:  
     uses: ./.github/workflows/get-manager.yml
+    if: false
     secrets: inherit
     with:
       kernelsu_variant: ${{ inputs.kernelsu_variant }}
@@ -526,8 +527,9 @@ jobs:
             $PRERELEASE_FLAG
 
       # ==================== 上传管理器和模块 ====================
-      - name: 上传管理器和 SUSFS 模块
+      - name: 上传管理器和 SUSFS 模块        
         continue-on-error: true
+        if: false
         run: |
           echo "准备上传 APK 与 SUSFS 模块..."
           apk_count=$(find ./downloaded-artifacts -type f -name "*.apk" | wc -l || true)
