@@ -46,6 +46,11 @@ on:
         required: true
         type: boolean
         default: true
+      bypass_unicode:
+        description: "Unicode fix"
+        required: false
+        type: boolean
+        default: true
       cancel_susfs:
         description: "禁用 SUSFS"
         required: true
@@ -85,6 +90,9 @@ on:
         type: boolean
       use_kpm:
         required: true
+        type: boolean
+      bypass_unicode:
+        required: false
         type: boolean
       cancel_susfs:
         required: false
@@ -134,6 +142,7 @@ jobs:
       use_zram: ${{ inputs.use_zram }}
       use_bbg: ${{ inputs.use_bbg }}
       use_kpm: ${{ inputs.use_kpm }}
+      bypass_unicode: ${{ inputs.bypass_unicode }}
       add_nomount: ${{ inputs.add_nomount }}
       add_nomountX: ${{ inputs.add_nomountX }}
       add_hymofs: ${{ inputs.add_hymofs }}
