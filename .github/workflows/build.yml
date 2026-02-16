@@ -676,7 +676,7 @@ jobs:
             cp "$GITHUB_WORKSPACE/patches/nomount/$NOMOUNT_PATCH" nomount.patch
           else
             IS_X=""
-            MASTER_EXP="staging" # master experimental staging
+            MASTER_EXP="master" # master experimental staging
             echo "  <> ORIGinal/latest patch ($MASTER_EXP)"
             curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
           fi
