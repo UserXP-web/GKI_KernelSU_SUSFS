@@ -139,6 +139,7 @@ jobs:
       use_zram: ${{ inputs.use_zram }}
       use_bbg: ${{ inputs.use_bbg }}
       use_kpm: ${{ inputs.use_kpm }}
+      bypass_unicode: ${{ inputs.bypass_unicode }}
       cancel_susfs: ${{ inputs.cancel_susfs }}
       add_nomount: ${{ inputs.add_nomount }}
       add_nomountX: ${{ inputs.add_nomountX }}
