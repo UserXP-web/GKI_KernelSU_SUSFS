@@ -214,6 +214,9 @@ jobs:
         kernel_root: ${{ env.KERNEL_ROOT }}
         defconfig_fragment: ${{ env.DEFCONFIG_FRAGMENT }}
 
+    - name: Check if BBG
+      if: contains(inputs.feature_set, 'BBG')
+      run: echo "WITH_BBG=y" >> $GITHUB_ENV
     - name: Check if SUSFS
       if: contains(inputs.feature_set, 'SUSFS')
       run: echo "WITH_SUSFS=y" >> $GITHUB_ENV
@@ -264,7 +267,7 @@ jobs:
         #if [ "${{ inputs.bypass_unicode }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
         #if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
         #if [ "${{ inputs.use_zram }}" == "true" ]; then NAME_INFO="${NAME_INFO}_zram"; fi
-        #if [ "${{ inputs.use_bbg }}" == "true" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
+        if [ "${{ env.WITH_SUSFS }}" == "y" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
         #if [ "${{ inputs.use_kpm }}" == "true" ]; then NAME_INFO="${NAME_INFO}_kpm"; fi
         #if [ "${{ inputs.enable_tmpfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_tmpfs"; fi
         NAME_INFO="${NAME_INFO}_tmpfs"
