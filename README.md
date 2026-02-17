@@ -18,6 +18,16 @@
 
 ② 本仓库只提供ReSukiSU的预构建内核，对于其它KernelSU分支，请分叉本仓库或 [zzh20188/GKI_KernelSU_SUSFS](https://github.com/zzh20188/GKI_KernelSU_SUSFS/) 然后自行构建。
 
+## 💰 特别鸣谢
+
+[coolzyd9107](https://github.com/coolzyd9107)：仓库的创建者和所有者，但他是一个大fèiwù，很多东西都不会
+
+[zzh20188](https://github.com/zzh20188)：他是本仓库的上游仓库作者
+
+[zhuzhuzihan](https://github.com/zhuzhuzihan)：协助进行了大量修复和修改
+
+[TanakaLun](https://github.com/TanakaLun)：协助进行了大量修复和修改
+
 ## 🚀 快速导航
 
 <table>
