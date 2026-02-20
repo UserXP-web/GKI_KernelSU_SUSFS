@@ -656,6 +656,29 @@ jobs:
               echo "Manual Hook 补丁已成功应用"
           fi
 
+      - name: HymoFS support
+        if: ${{ inputs.add_hymofs }}
+        working-directory: ${{ env.KERNEL_ROOT }}/common
+        run: |
+          echo "[💠] Apply HymoFS"
+          #########cd "$CONFIG/common" # cd $KERNEL_DIR 
+
+          # HymoFS One-Line Setup Script
+          # Usage: curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig with-susfs
+          if [ "${{ inputs.enable_susfs }}" == "false" ]; then 
+            curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
+          else
+            curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
+          fi
+          #curl -LSs "https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/android12_5.10/patch/hymofs.patch" -o hymofs.patch
+          #patch -p1 --fuzz=3 < hymofs.patch
+          
+          NAME_INFO="${{ env.NAME_INFO }}_hymofs"
+          echo "@@@@@@@@@@@@@@@@@@@ NAME_INFO=$NAME_INFO"
+          echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
+
+          echo "[✅] Done."
+
       - name: NoMount
         if: inputs.add_nomount || inputs.add_nomountX
         working-directory: ${{ env.KERNEL_ROOT }}/common
@@ -697,29 +720,6 @@ jobs:
           echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
           echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
           #fi
-
-      - name: HymoFS support
-        if: ${{ inputs.add_hymofs }}
-        working-directory: ${{ env.KERNEL_ROOT }}/common
-        run: |
-          echo "[💠] Apply HymoFS"
-          #########cd "$CONFIG/common" # cd $KERNEL_DIR 
-
-          # HymoFS One-Line Setup Script
-          # Usage: curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig with-susfs
-          if [ "${{ inputs.enable_susfs }}" == "false" ]; then 
-            curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
-          else
-            curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
-          fi
-          #curl -LSs "https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/android12_5.10/patch/hymofs.patch" -o hymofs.patch
-          #patch -p1 --fuzz=3 < hymofs.patch
-          
-          NAME_INFO="${{ env.NAME_INFO }}_hymofs"
-          echo "@@@@@@@@@@@@@@@@@@@ NAME_INFO=$NAME_INFO"
-          echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
-
-          echo "[✅] Done."
 
       - name: Config Options And NAME_INFO
         run: |
