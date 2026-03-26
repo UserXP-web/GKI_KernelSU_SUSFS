@@ -1069,8 +1069,8 @@ jobs:
           #sudo apt install clang libc++-dev build-essential g++
           #clang --version
 
-          sudo apt-get install lld
-          sudo apt-get install llvm
+          #sudo apt install lld # no get
+          #sudo apt-get install llvm
 
           cd "${{ env.KERNEL_ROOT }}/prebuilts-master/clang/host/linux-x86"
           clangVersion="r584948b" # r383902 r416183b r584948b --- r563880b
