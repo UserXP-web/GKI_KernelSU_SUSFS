@@ -73,12 +73,47 @@ on:
         description: "禁用 SUSFS"
         type: boolean
         default: false
+      add_zeromount:
+        description: 'Add ZERoMount support (main)'
+        required: false
+        type: boolean
+        default: false
+      add_nomount:
+        description: 'Add NoMount support'
+        required: false
+        type: boolean
+        default: false
+      add_nomountX:
+        description: 'Add NoMount support (saved/old)'
+        required: false
+        type: boolean
+        default: false
+      add_hymofs:
+        description: 'Enable support for HymoFS'
+        required: false
+        type: boolean
+        default: false
+      custom:
+        description: "Custom kernel (AOSP)"
+        required: false
+        type: boolean
+        default: false
+      custom_name:
+        description: "Custom kernel (AOSP) name"
+        required: false
+        type: choice
+        options:
+          - "UserXP"
+          - "playground"
+          - "EvoX"
+          - "zylhdrXP"
+        default: "zylhdrXP"
 
       # ==================== 构建版本选择 ====================
       build_a12_5_10:
         description: "Android 12 - 5.10"
         type: boolean
-        default: false
+        default: true
       build_a13_5_15:
         description: "Android 13 - 5.15"
         type: boolean
@@ -96,9 +131,9 @@ on:
         type: boolean
         default: false
       build_all:
-        description: "构建全部版本"
+        description: "Build All"
         type: boolean
-        default: true
+        default: false
 
       # ==================== Bot-Push 选项 ====================
       commit:
@@ -116,6 +151,7 @@ jobs:
   # ==================== 获取管理器 ====================
   # 下载最新的 KernelSU 管理器 APK 和 SUSFS 模块
   get-manager:
+    if: false
     uses: ./.github/workflows/get-manager.yml
     secrets: inherit
 
@@ -133,6 +169,12 @@ jobs:
       use_kpm: ${{ inputs.use_kpm }}
       cancel_susfs: ${{ inputs.cancel_susfs }}
       called_from_main: true
+      add_zeromount: ${{ inputs.add_zeromount }}
+      add_nomount: ${{ inputs.add_nomount }}
+      add_nomountX: ${{ inputs.add_nomountX }}
+      add_hymofs: ${{ inputs.add_hymofs }}
+      custom: ${{ inputs.custom }}
+      custom_name: ${{ inputs.custom_name }}
 
   # ==================== Android 13 - 5.15 构建 ====================
   build-a13-5-15:
