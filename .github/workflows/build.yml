@@ -5,7 +5,7 @@
 # 通过 workflow_call 被其他工作流调用，不直接手动触发
 # ========================================
 
-name: Build the Kernel
+name: Build the kernel
 
 # 适配 Node.js 24
 env:
