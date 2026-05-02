@@ -668,31 +668,19 @@ jobs:
           echo ""
           echo "=== NoMount patch ==="
           ###cd "$CONFIG/common"
-          if [ "${{ inputs.enable_susfs }}" == "false" ]; then
-            NOMOUNT_PATCH="nomount-kernel-${{ inputs.kernel_version }}.patch"
-            echo "  no susfs: $NOMOUNT_PATCH"
-          else            
-            NOMOUNT_PATCH="nomount-susfs-kernel-${{ inputs.kernel_version }}.patch"
-            echo "  with susfs: $NOMOUNT_PATCH"
-          fi
-          if [ "${{ inputs.add_nomountX }}" == "true" ]; then
-            IS_X="X"
-            echo "  <> saved/old patch"
-            curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/patches/nomount/$NOMOUNT_PATCH" -o nomount.patch
-          else
-            IS_X=""
-            if [ "${{ inputs.enable_susfs }}" == "false" ]; then
-              MASTER_EXP="master" # master experimental staging
-              echo "  <> LIVE/latest patch ($MASTER_EXP)"
-              curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/patches/$NOMOUNT_PATCH" -o nomount.patch
-            else
-              echo "  <> LIVE/latest patch (WITH EDITS by UserXP...)"
-              curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/patches/nomount/edit/$NOMOUNT_PATCH" -o nomount.patch
-            fi
-          fi
+
+          MASTER_EXP="master" # master dev
+          echo "  <> LIVE/latest patch ($MASTER_EXP)"
+          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/kernel/nomount_kernel_integration.patch" -o nomount.patch
+          ############################################
+          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/kernel/src/nomount.c" -o nomount.c
+          curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/kernel/src/nomount.h" -o nomount.h
+          mv nomount.c nomount.h ./fs/
+
           chmod 777 nomount.patch
           echo "Applying..."
-          patch -p1 --fuzz=10 < nomount.patch # > patch_nomount_log.txt 2>&1
+          patch -p1 --fuzz=3 < nomount.patch # > patch_nomount_log.txt 2>&1
+          echo "=== END NoMount patch ==="
           
       - name: HymoFS support
         if: ${{ inputs.add_hymofs }}
