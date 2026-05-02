@@ -1136,15 +1136,20 @@ jobs:
           fi
 
       - name: CORRECT stupid
-        if: inputs.custom
+        if: inputs.custom || true
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
-          SUB_DIR="common" # sm7435
-          curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/correct/bootconfig.c" -o ./$SUB_DIR/fs/proc/bootconfig.c
+          echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+          cat ./common/fs/open.c
+          echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+          if [ "${{ inputs.custom }}" == "true" ]; then
+            SUB_DIR="common" # sm7435
+            curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/correct/bootconfig.c" -o ./$SUB_DIR/fs/proc/bootconfig.c
 
-          # Remove check_defconfig
-          #sed -i 's|^POST_DEFCONFIG_CMDS=.*|POST_DEFCONFIG_CMDS=""|' "$GITHUB_WORKSPACE/$CONFIG/$SUB_DIR/build.config.gki"
-          #sed -i 's/check_defconfig//' ./$SUB_DIR/build.config.gki
+            # Remove check_defconfig
+            #sed -i 's|^POST_DEFCONFIG_CMDS=.*|POST_DEFCONFIG_CMDS=""|' "$GITHUB_WORKSPACE/$CONFIG/$SUB_DIR/build.config.gki"
+            #sed -i 's/check_defconfig//' ./$SUB_DIR/build.config.gki
+          fi
 
       - name: 📝 clang... lld...
         if: inputs.custom
