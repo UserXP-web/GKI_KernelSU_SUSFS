@@ -77,6 +77,30 @@ on:
         required: false
         type: string
         default: "off"
+      add_zeromount:
+        required: false
+        type: boolean
+        default: false
+      add_nomount:
+        required: false
+        type: boolean
+        default: false
+      add_nomountX:
+        required: false
+        type: boolean
+        default: false
+      add_hymofs:
+        required: false
+        type: boolean
+        default: false
+      custom:
+        required: false
+        type: boolean
+        default: false
+      custom_name:
+        required: false
+        type: string
+        default: ""
 
 jobs:
   build-kernel:
@@ -112,6 +136,12 @@ jobs:
           echo "Re-Kernel     : ${{ inputs.use_rekernel }}"
           echo "Droidspaces   : ${{ inputs.droidspaces }}"
           echo "Stock Config  : 自动检测 config/stock_defconfig"
+          echo "ZeroMount     : ${{ inputs.add_zeromount }}"
+          echo "NoMount       : ${{ inputs.add_nomount }}"
+          echo "NoMount (edit): ${{ inputs.add_nomountX }}"
+          echo "HymoFS        : ${{ inputs.add_hymofs }}"
+          echo "Custom GKI    : ${{ inputs.custom }}"
+          echo "Cust GKI name : ${{ inputs.custom_name }}"
           echo "========================================"
 
       # ==================== 清理磁盘空间 ====================
@@ -278,16 +308,24 @@ jobs:
 
       # ==================== 初始化并同步内核源码 ====================
       # 使用 repo 工具从 AOSP 获取 GKI 内核源码
-      - name: 初始化并同步内核源码
+      - name: Initialize and synchronize kernel source code
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           # 克隆 GCC 工具链 (用于 5.x 内核)
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-gnu-6.4.1.git gcc
 
-          FORMATTED_BRANCH="${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}"
-          echo "初始化 repo，分支: common-${FORMATTED_BRANCH}"
-
-          $REPO init --depth=1 -u https://android.googlesource.com/kernel/manifest -b common-${FORMATTED_BRANCH} --repo-rev=v2.16
+          if ${{ inputs.custom }}; then
+            MANIFEST_URL="https://github.com/UserXP-web/kernel_build"
+            FORMATTED_BRANCH="main"
+            MANIFEST_PATH_NAME="manifest/${{ inputs.custom_name }}.xml"
+          else
+            MANIFEST_URL="https://android.googlesource.com/kernel/manifest"
+            FORMATTED_BRANCH="common-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.os_patch_level }}"
+            MANIFEST_PATH_NAME="default.xml"
+          fi
+          echo "Synchronize branch: $FORMATTED_BRANCH"          
+          $REPO init --depth=1 -u $MANIFEST_URL -b $FORMATTED_BRANCH -m $MANIFEST_PATH_NAME --repo-rev=v2.16
+          #$REPO init --depth=1 -u https://android.googlesource.com/kernel/manifest -b common-${FORMATTED_BRANCH} --repo-rev=v2.16
 
           # 检查是否为已弃用的分支
           REMOTE_BRANCH=$(git ls-remote https://android.googlesource.com/kernel/common ${FORMATTED_BRANCH})
@@ -347,7 +385,7 @@ jobs:
 
       # ==================== 提取实际子版本号 ====================
       # 从 Makefile 中读取真实的 SUBLEVEL 值
-      - name: 提取实际子版本号
+      - name: Extract the actual sub-version number
         run: |
           ACTUAL_SUBLEVEL="${{ inputs.sub_level }}"
           if [[ -f "$KERNEL_ROOT/common/Makefile" ]]; then
@@ -399,7 +437,7 @@ jobs:
 
       # ==================== 确定 KernelSU 分支 ====================
       # ReSukiSU 支持自定义分支或 commit hash
-      - name: 确定 KernelSU 分支
+      - name: Determine the KernelSU branch
         id: ksu-branch
         run: |
           branch_input="${{ inputs.ksu_branch }}"
@@ -418,7 +456,7 @@ jobs:
 
       # ==================== 添加 KernelSU ====================
       # 添加 ReSukiSU
-      - name: 添加 KernelSU
+      - name: Add KernelSU
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           echo "添加 ReSukiSU..."
@@ -434,12 +472,12 @@ jobs:
 
       # ==================== 应用 SUSFS 补丁 ====================
       # SUSFS (Super User SUS FileSystem) 用于隐藏 root 痕迹
-      - name: 应用 SUSFS 补丁
+      - name: Apply SUSFS patch
         if: inputs.enable_susfs
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
-          echo "应用 SUSFS 补丁..."
-          # 读取 SUSFS 上游版本（例如 v2.1.0），用于匹配 wild 修复补丁目录
+          echo "Apply SUSFS patch..."
+          # Read the upstream SUSFS version (e.g., v2.1.0) to match the wild patch directory.
           SUSFS_VERSION=$(grep -E '^#define[[:space:]]+SUSFS_VERSION' "$SUSFS4KSU/kernel_patches/include/linux/susfs.h" | awk '{print $3}' | tr -d '"' | sed 's/^v//')
           if [ -z "$SUSFS_VERSION" ]; then
             SUSFS_VERSION="2.0.0"
@@ -606,8 +644,8 @@ jobs:
           echo "DROIDSPACES_PATCHES=/tmp/Droidspaces-OSS/Documentation/resources/kernel-patches/GKI" >> $GITHUB_ENV
 
       # ==================== 备份原始 defconfig ====================
-      # 用于后续生成 defconfig fragment（bazel trim 兼容）
-      - name: 备份原始 defconfig
+      # Used for subsequent generation of defconfig fragments (Bazel trim compatible)
+      - name: Backup original defconfig
         run: cp "$DEFCONFIG" "$DEFCONFIG.orig"
 
       - name: 集成 Droidspaces 支持
@@ -619,7 +657,7 @@ jobs:
 
           # 678 -> 6_7_8, 123 -> 1_2_3, 345 -> 3_4_5
           SLOT_NAME=$(echo "$SLOT" | sed 's/\(.\)/\1_/g; s/_$//')
-          echo "应用 Droidspaces SYSVIPC kABI 修复补丁 (槽位: $SLOT / $SLOT_NAME)..."
+          echo "Apply the Droidspaces SYSVIPC kABI patch (slot: $SLOT / $SLOT_NAME)..."
           case "$KERNEL_VER" in
             6.12)
               PATCH_FILE="$DROIDSPACES_PATCHES/kernel-6.12/001.GKI-6.12-or-above-fix_sysvipc_kabi.patch"
@@ -628,12 +666,12 @@ jobs:
               PATCH_FILE="$DROIDSPACES_PATCHES/below-kernel-6.12/001.GKI-below-6.12-fix_sysvipc_kabi_${SLOT_NAME}.patch"
               ;;
             *)
-              echo "::warning::Droidspaces: 未适配的内核版本 $KERNEL_VER，跳过补丁"
+              echo "::warning::Droidspaces: Incompatible kernel versions $KERNEL_VER, skip the patch."
               exit 0
               ;;
           esac
           if ! patch -p1 --forward < "$PATCH_FILE"; then
-            echo "::warning::SYSVIPC kABI 补丁应用失败，可能已应用或上下文不匹配"
+            echo "::warning::SYSVIPC kABI Patch application failed, possibly due to already being applied or context mismatch."
           fi
 
           # 5.10 及以下还需要 POSIX_MQUEUE 的 kABI 修复
@@ -959,7 +997,7 @@ jobs:
           EOF
 
       # ==================== 配置内核名称 ====================
-      - name: 配置内核名称
+      - name: Configure kernel name
         working-directory: ${{ env.KERNEL_ROOT }}
         run: |
           if [ -f "build/build.sh" ]; then
@@ -1024,7 +1062,7 @@ jobs:
           fi
 
       # ==================== 自定义构建时间 ====================
-      - name: 设置自定义构建时间
+      - name: Set custom build time
         shell: bash
         run: |
           # 读取输入：输入 N/n 或留空时，使用当前 UTC 时间
@@ -1056,9 +1094,204 @@ jobs:
             fi
           fi
 
+
+      - name: Apply ZeroMount Patch
+        if: inputs.add_zeromount && inputs.enable_susfs
+        working-directory: ${{ env.KERNEL_ROOT }}/common
+        run: |
+            BRANCH="main" # main feature/patch-restructure
+            #ANDROID_VERSION=${{ inputs.android_version }}
+            #KERNEL_VERSION=${{ inputs.kernel_version }}
+            KERNEL_VARIANT=WildKSU
+            #echo "==> Apply Upstream SUSFS Patch"
+            #PATCHNAME=50_add_susfs_in_gki-$ANDROID_VERSION-$KERNEL_VERSION.patch
+            #curl -LSs "https://raw.githubusercontent.com/Enginex0/Super-Builders/refs/heads/$BRANCH/$ANDROID_VERSION-$KERNEL_VERSION/$KERNEL_VARIANT/patches/$PATCHNAME" -o $PATCHNAME
+            #patch -p1 -F3 --no-backup-if-mismatch < "$PATCHNAME"
+            #echo "==> Apply Enhanced SUSFS Patch"
+            #PATCHNAME=51_enhanced_susfs-$ANDROID_VERSION-$KERNEL_VERSION.patch
+            #curl -LSs "https://raw.githubusercontent.com/Enginex0/Super-Builders/refs/heads/$BRANCH/$ANDROID_VERSION-$KERNEL_VERSION/$KERNEL_VARIANT/patches/$PATCHNAME" -o $PATCHNAME
+            #patch -p1 -F3 --no-backup-if-mismatch < "$PATCHNAME"        
+            #echo "==> Apply KSU Safety Patch..."
+            #cd ../Wild_KSU
+            #PATCHNAME=70_ksu_safety-wksu-$KERNEL_VERSION.patch
+            #curl -LSs "https://raw.githubusercontent.com/Enginex0/Super-Builders/refs/heads/$BRANCH/$ANDROID_VERSION-$KERNEL_VERSION/$KERNEL_VARIANT/patches/$PATCHNAME" -o $PATCHNAME
+            #[ -s "$PATCHNAME" ] && patch -p1 --no-backup-if-mismatch < "$PATCHNAME" || echo "No 70_ patch needed"
+            #cd ../common
+  
+            PATCHNAME=60_zeromount-$ANDROID_VERSION-$KERNEL_VERSION.patch          
+            curl -LSs "https://raw.githubusercontent.com/Enginex0/Super-Builders/refs/heads/$BRANCH/$ANDROID_VERSION-$KERNEL_VERSION/$KERNEL_VARIANT/patches/$PATCHNAME" -o $PATCHNAME
+            patch -p1 -F3 --no-backup-if-mismatch < "$PATCHNAME"
+      - name: NoMount
+        if: inputs.add_nomount || inputs.add_nomountX
+        working-directory: ${{ env.KERNEL_ROOT }}/common
+        run: |
+          echo ""
+          echo "=== NoMount patch ==="
+          ###########cd "$KERNEL_ROOT/common" # cd "$CONFIG/common"
+  
+          MASTER_EXP="master" # master dev
+          echo "  Copying files to fs/..."
+          if [ "${{ inputs.add_nomount }}" == "true" ]; then            
+            curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/kernel/src/nomount.c" -o ./fs/nomount.c
+            #curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/patches/nomount/edit/nomount.c" -o ./fs/nomount.c
+            curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/kernel/src/nomount.h" -o ./fs/nomount.h
+            echo "  Done."
+            echo "  <> LIVE/latest patch ($MASTER_EXP)"
+            curl -LSs "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/$MASTER_EXP/kernel/nomount_kernel_integration.patch" -o nomount.patch
+          else
+            curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/patches/nomount/edit/nomount.c" -o ./fs/nomount.c
+            curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/patches/nomount/edit/nomount.h" -o ./fs/nomount.h
+            echo "  Done."
+            echo "  <> LIVE/latest patch ($MASTER_EXP) with edits by UserXP"
+            curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/patches/nomount/edit/nomount_kernel_integration.patch" -o nomount.patch
+          fi
+          chmod 777 nomount.patch
+          echo "Applying..."
+          patch -p1 --fuzz=3 < nomount.patch # > patch_nomount_log.txt 2>&1
+          echo "=== END NoMount patch ==="
+  
+      - name: HymoFS support
+        if: ${{ inputs.add_hymofs }}
+        working-directory: ${{ env.KERNEL_ROOT }}/common
+        run: |
+          echo "[💠] Apply HymoFS"
+          #########cd "$CONFIG/common" # cd $KERNEL_DIR
+
+          # HymoFS One-Line Setup Script
+          # Usage: curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig with-susfs
+          if [ "${{ inputs.enable_susfs }}" == "false" ]; then 
+            #curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
+            curl -LSs https://raw.githubusercontent.com/UserXP-web/kernel_build/main/patches/hymofs/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
+          else
+            #curl -LSs https://raw.githubusercontent.com/Anatdx/HymoFS/main/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
+            curl -LSs https://raw.githubusercontent.com/UserXP-web/kernel_build/main/patches/hymofs/setup.sh | bash -s defconfig arch/arm64/configs/gki_defconfig
+          fi          
+          #patch -p1 --fuzz=3 < hymofs.patch # patch -p1 --fuzz=3 < hymofs.patch
+          echo "[✅] Done."
+  
+      - name: NAME_INFO and Config
+        run: |
+          NAME_INFO="${{ env.NAME_INFO }}"
+          CONFIG_FILE="$DEFCONFIG" # "common/arch/arm64/configs/gki_defconfig"
+  
+          if [[ "${{ inputs.custom }}" == "true" ]]; then NAME_INFO="${NAME_INFO}_${{ inputs.custom_name }}"; fi
+          if [[ "${{ inputs.add_zeromount }}" == "true" ]]; then NAME_INFO="${NAME_INFO}_Zero"; fi
+          if [[ "${{ inputs.add_nomount }}" == "true" ]] || [[ "${{ inputs.add_nomountX }}" == "true" ]]; then
+            if [ "${{ inputs.add_nomountX }}" == "true" ]; then IS_X="X"; fi
+            NAME_INFO="${NAME_INFO}_NoMount$IS_X"
+            echo "CONFIG_NOMOUNT=y" >> "$CONFIG_FILE"
+          fi
+          if [[ "${{ inputs.add_hymofs }}" == "true" ]]; then NAME_INFO="${NAME_INFO}_hymofs"; fi
+   
+          #if [ "${{ inputs.bypass_unicode }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
+          if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
+          if [ "${{ inputs.use_zram }}" == "true" ]; then NAME_INFO="${NAME_INFO}_zram"; fi
+          #if [ "${{ env.WITH_BBG }}" == "y" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
+          if [ "${{ inputs.use_bbg }}" == "true" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
+          if [ "${{ inputs.use_kpm }}" == "true" ]; then NAME_INFO="${NAME_INFO}_kpm"; fi
+          #if [ "${{ inputs.enable_tmpfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_tmpfs"; fi
+          NAME_INFO="${NAME_INFO}_tmpfs"
+          #if [ "${{ env.WITH_SUSFS }}" == "y" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
+          if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
+          #if [ "${{ inputs.add_bypass }}" == "true" ]; then NAME_INFO="-Bypass${NAME_INFO}"; fi
+
+          NAME_INFO="${NAME_INFO}_$(date +'%d.%m.%y')"
+          echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
+          echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
+
+          cat >> "$CONFIG_FILE" << 'EOF'
+          #CONFIG_REKERNEL=y
+          #CONFIG_REKERNEL_NETWORK=y
+          CONFIG_BPF_STREAM_PARSER=y		  
+          CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
+          CONFIG_NETFILTER_XT_SET=y
+          CONFIG_IP6_NF_NAT=y
+          CONFIG_IP6_NF_TARGET_MASQUERADE=y          
+          CONFIG_KSU_SUSFS_SUS_KSTAT_REDIRECT=y
+          CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y
+          CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y   
+          # Optional kernel config placeholders
+          # Networking Configuration
+          CONFIG_IP_NF_TARGET_TTL=y
+          CONFIG_IP6_NF_TARGET_HL=y
+          CONFIG_IP6_NF_MATCH_HL=y   
+          # BBR TCP Congestion Control
+          CONFIG_TCP_CONG_ADVANCED=y
+          CONFIG_TCP_CONG_BBR=y
+          CONFIG_NET_SCH_FQ=y
+          # CONFIG_TCP_CONG_BIC is not set
+          # CONFIG_TCP_CONG_WESTWOOD is not set
+          # CONFIG_TCP_CONG_HTCP is not set   
+          # IPSet Support
+          CONFIG_IP_SET=y
+          CONFIG_IP_SET_MAX=65534
+          CONFIG_IP_SET_BITMAP_IP=y
+          CONFIG_IP_SET_BITMAP_IPMAC=y
+          CONFIG_IP_SET_BITMAP_PORT=y
+          CONFIG_IP_SET_HASH_IP=y
+          CONFIG_IP_SET_HASH_IPMARK=y
+          CONFIG_IP_SET_HASH_IPPORT=y
+          CONFIG_IP_SET_HASH_IPPORTIP=y
+          CONFIG_IP_SET_HASH_IPPORTNET=y
+          CONFIG_IP_SET_HASH_IPMAC=y
+          CONFIG_IP_SET_HASH_MAC=y
+          CONFIG_IP_SET_HASH_NETPORTNET=y
+          CONFIG_IP_SET_HASH_NET=y
+          CONFIG_IP_SET_HASH_NETNET=y
+          CONFIG_IP_SET_HASH_NETPORT=y
+          CONFIG_IP_SET_HASH_NETIFACE=y
+          CONFIG_IP_SET_LIST_SET=y
+          EOF
+
+      - name: CORRECT stupid
+        if: inputs.custom
+        working-directory: ${{ env.KERNEL_ROOT }}
+        run: |
+          SUB_DIR="common" # sm7435
+          curl -LSs "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/correct/bootconfig.c" -o ./$SUB_DIR/fs/proc/bootconfig.c
+
+          # Remove check_defconfig
+          #sed -i 's|^POST_DEFCONFIG_CMDS=.*|POST_DEFCONFIG_CMDS=""|' "$GITHUB_WORKSPACE/$CONFIG/$SUB_DIR/build.config.gki"
+          sed -i 's/check_defconfig//' ./$SUB_DIR/build.config.gki
+
+      - name: 📝 clang... lld...
+        if: inputs.custom
+        run: |
+          #sudo apt update
+          #sudo apt install clang libc++-dev build-essential g++
+          #clang --version
+
+          sudo apt-get install lld
+          sudo apt-get install llvm
+
+          cd "${{ env.KERNEL_ROOT }}/prebuilts-master/clang/host/linux-x86"
+          clangVersion="r584948b" # r383902 r416183b r584948b --- r563880b
+          androidVersion="" # 12 or [empty]
+          if [ "${clangVersion}" == "r383902" ]; then androidVersion='12'; fi        
+          echo "============================================================================================="
+          if [ "${androidVersion}" == "" ]; then
+            url2="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-${clangVersion}.tar.gz"
+          else
+            url2="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${androidVersion}-release/clang-${clangVersion}.tar.gz"
+          fi
+          echo "Downloading... $url2"
+          clang_PATH="clang-r563880b" # clang_PATH="clang-$clangVersion" <<<<<<<<<<<<<<========================================================================
+          mkdir -p $clang_PATH &&
+          aria2c -s16 -x16 -k1M $url2 -o clang.zip &&
+          tar -xf clang.zip -C $clang_PATH &&
+          rm -rf clang.zip
+          echo "============================================================================================="
+  
+          WORKDIR="$(pwd)"
+          export PATH="$WORKDIR/$clang_PATH/bin:$PATH"
+          export PATH="/usr/lib/ccache:$PATH"
+          echo "PATH=$PATH"
+
+
+
       # ==================== 编译内核 ====================
       # 使用重试机制编译内核，超时后自动重试
-      - name: 构建——如出错为该KSU暂时未同步SUSFS代码或编译时错误(等待该KSU仓库修复)
+      - name: Build – If error, because KSU repo hasn't synch SUSFS code yet or compile-time error (wait for the KSU repo to fix this).
         uses: nick-fields/retry@v4
         with:
           timeout_minutes: 30
@@ -1136,7 +1369,7 @@ jobs:
       - name: 创建 AnyKernel3 压缩包
         run: |
           cd $ANYKERNEL3
-          ZIP_NAME="${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}-AnyKernel3.zip"
+          ZIP_NAME="ResikiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ env.ACTUAL_SUBLEVEL }}-${{ inputs.os_patch_level }}${{ env.NAME_INFO }}-AnyKernel3.zip"
           mv ../Image ./Image
           zip -r "../$ZIP_NAME" ./*
 
@@ -1164,7 +1397,7 @@ jobs:
           # 创建普通 boot.img
           $MKBOOTIMG --header_version 4 --kernel Image --output boot.img --ramdisk out/ramdisk --os_version 12.0.0 --os_patch_level "${{ inputs.os_patch_level }}"
           $AVBTOOL add_hash_footer --partition_name boot --partition_size $((64 * 1024 * 1024)) --image boot.img --algorithm SHA256_RSA2048 --key $BOOT_SIGN_KEY_PATH
-          cp ./boot.img ../${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ inputs.sub_level }}-${{ inputs.os_patch_level }}-boot.img
+          cp ./boot.img ../ResukiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ env.ACTUAL_SUBLEVEL }}-${{ inputs.os_patch_level }}${{ env.NAME_INFO }}-boot.img
 
           # 创建 gzip 压缩的 boot.img
           $MKBOOTIMG --header_version 4 --kernel Image.gz --output boot-gz.img --ramdisk out/ramdisk --os_version 12.0.0 --os_patch_level "${{ inputs.os_patch_level }}"
@@ -1231,7 +1464,7 @@ jobs:
       - name: 上传构建产物
         uses: actions/upload-artifact@v6
         with:
-          name: ReSukiSU_kernel-${{ env.CONFIG }}
+          name: ReSukiSU-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ env.ACTUAL_SUBLEVEL }}${{ env.NAME_INFO }}
           path: |
             *AnyKernel3.zip
             *.img
@@ -1242,7 +1475,7 @@ jobs:
         if: always() && env.REJ_COUNT > 0
         uses: actions/upload-artifact@v6
         with:
-          name: ReSukiSU_kernel-${{ env.CONFIG }}-Rejects
+          name: ReSukiSU-${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ env.ACTUAL_SUBLEVEL }}${{ env.NAME_INFO }}-Rejects
           path: patch-rejects/
           if-no-files-found: ignore
           compression-level: 9
