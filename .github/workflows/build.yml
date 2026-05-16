@@ -1205,8 +1205,8 @@ jobs:
           NAME_INFO="${NAME_INFO}_tmpfs"
           #if [ "${{ env.WITH_SUSFS }}" == "y" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
           if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
-          #if [ "${{ inputs.add_bypass }}" == "true" ]; then NAME_INFO="-Bypass${NAME_INFO}"; fi
-
+          if [ "${{ inputs.droidspaces }}" != "off" ]; then NAME_INFO="${NAME_INFO}_${{ inputs.droidspaces }}"; fi
+          
           NAME_INFO="${NAME_INFO}_$(date +'%d.%m.%y')"
           echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
           echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
