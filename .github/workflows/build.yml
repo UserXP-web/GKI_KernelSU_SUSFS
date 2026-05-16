@@ -77,6 +77,10 @@ on:
         required: false
         type: string
         default: "off"
+      use_kpm:
+        required: false
+        type: boolean
+        default: false
       add_zeromount:
         required: false
         type: boolean
@@ -136,6 +140,7 @@ jobs:
           echo "Re-Kernel     : ${{ inputs.use_rekernel }}"
           echo "Droidspaces   : ${{ inputs.droidspaces }}"
           echo "Stock Config  : 自动检测 config/stock_defconfig"
+          echo "KPM 功能      : ${{ inputs.use_kpm }}"
           echo "ZeroMount     : ${{ inputs.add_zeromount }}"
           echo "NoMount       : ${{ inputs.add_nomount }}"
           echo "NoMount (edit): ${{ inputs.add_nomountX }}"
@@ -978,6 +983,13 @@ jobs:
           # 移除 defconfig 检查
           sed -i 's/check_defconfig//' ./common/build.config.gki
 
+      - name: Enable KPM
+        if: inputs.use_kpm
+        run: |
+          if [ "${{ inputs.ksu_variant }}" == "ReSukiSU" ]; then
+            echo "CONFIG_KPM=y" >> "$DEFCONFIG"
+          fi
+
       # ==================== 添加 SUSFS 配置 ====================
       # 启用 SUSFS 各项隐藏功能
       - name: 添加 SUSFS 配置
@@ -1346,6 +1358,29 @@ jobs:
             echo "当前 KSU 最新提交日期: ${KSU_LATEST_COMMIT_DATE}"
             echo "当前 SUSFS 最新提交日期: ${SUSFS_LATEST_COMMIT_DATE}"
             echo "如果日期不同或相差过远则补丁失效、编译失败"
+
+      # ==================== KPM patch (ReSukiSU) ====================
+      # Apply KPM (Kernel Patch Module) patch to ReSukiSU
+      - name: Apply the KPM patch (ReSukiSU).
+        if: inputs.use_kpm
+        run: |
+          case "${{ inputs.android_version }}" in
+            "android12"|"android13")
+              if [ "${{ inputs.kernel_version }}" != "6.6" ]; then
+                TARGET_PATH="$KERNEL_ROOT/out/${{ inputs.android_version }}-${{ inputs.kernel_version }}/dist"
+              fi
+              ;;
+            "android14"|"android15"|"android16")
+              TARGET_PATH="$KERNEL_ROOT/bazel-bin/common/kernel_aarch64/"
+              ;;
+          esac
+
+          cp -r $SUKISU_PATCHES/kpm/patch_linux "$TARGET_PATH/patch"
+          cd "$TARGET_PATH"
+          chmod 777 patch
+          ./patch
+          rm -rf Image
+          mv oImage Image
 
       # ==================== 准备 Boot 镜像 ====================
       # 复制编译产物到工作目录
