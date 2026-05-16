@@ -64,11 +64,11 @@ on:
       use_bbg:
         description: "启用 BBG 防格机"
         type: boolean
-        default: false
+        default: true
       use_rekernel:
         description: "启用 Re-Kernel 驱动"
         type: boolean
-        default: false
+        default: true
       cancel_susfs:
         description: "CANCEL SUSFS"
         type: boolean
