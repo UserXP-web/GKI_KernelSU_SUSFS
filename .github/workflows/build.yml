@@ -1404,7 +1404,7 @@ jobs:
       - name: 创建 AnyKernel3 压缩包
         run: |
           cd $ANYKERNEL3
-          ZIP_NAME="ResikiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ env.ACTUAL_SUBLEVEL }}-${{ inputs.os_patch_level }}${{ env.NAME_INFO }}-AnyKernel3.zip"
+          ZIP_NAME="ReSukiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ env.ACTUAL_SUBLEVEL }}-${{ inputs.os_patch_level }}${{ env.NAME_INFO }}-AnyKernel3.zip"
           mv ../Image ./Image
           zip -r "../$ZIP_NAME" ./*
 
@@ -1432,7 +1432,7 @@ jobs:
           # 创建普通 boot.img
           $MKBOOTIMG --header_version 4 --kernel Image --output boot.img --ramdisk out/ramdisk --os_version 12.0.0 --os_patch_level "${{ inputs.os_patch_level }}"
           $AVBTOOL add_hash_footer --partition_name boot --partition_size $((64 * 1024 * 1024)) --image boot.img --algorithm SHA256_RSA2048 --key $BOOT_SIGN_KEY_PATH
-          cp ./boot.img ../ResukiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ env.ACTUAL_SUBLEVEL }}-${{ inputs.os_patch_level }}${{ env.NAME_INFO }}-boot.img
+          cp ./boot.img ../ReSukiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}.${{ env.ACTUAL_SUBLEVEL }}-${{ inputs.os_patch_level }}${{ env.NAME_INFO }}-boot.img
 
           # 创建 gzip 压缩的 boot.img
           $MKBOOTIMG --header_version 4 --kernel Image.gz --output boot-gz.img --ramdisk out/ramdisk --os_version 12.0.0 --os_patch_level "${{ inputs.os_patch_level }}"
