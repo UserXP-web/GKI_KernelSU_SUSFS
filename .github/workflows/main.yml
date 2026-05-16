@@ -81,7 +81,7 @@ on:
           - "678"
           - "123"
           - "345"
-        default: "123"
+        default: "678"
       use_kpm:
         required: false
         type: boolean
