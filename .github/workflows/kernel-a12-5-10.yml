@@ -56,6 +56,10 @@ on:
           - "123"
           - "345"
         default: "off"
+      use_kpm:
+        required: false
+        type: boolean
+        default: false
       add_zeromount:
         description: 'Add ZERoMount support (main)'
         required: false
@@ -121,6 +125,10 @@ on:
         required: false
         type: string
         default: "off"
+      use_kpm:
+        required: false
+        type: boolean
+        default: false
       add_zeromount:
         required: false
         type: boolean
@@ -185,6 +193,7 @@ jobs:
       supp_op: false
       enable_susfs: ${{ !inputs.cancel_susfs }}
       droidspaces: ${{ inputs.droidspaces || 'off' }}
+      use_kpm: ${{ inputs.use_kpm }}
       add_zeromount: ${{ inputs.add_zeromount }}
       add_nomount: ${{ inputs.add_nomount }}
       add_nomountX: ${{ inputs.add_nomountX }}
