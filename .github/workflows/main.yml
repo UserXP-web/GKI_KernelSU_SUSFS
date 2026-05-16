@@ -81,7 +81,7 @@ on:
           - "678"
           - "123"
           - "345"
-        default: "off"
+        default: "123"
       use_kpm:
         required: false
         type: boolean
@@ -126,7 +126,7 @@ on:
       build_a12_5_10:
         description: "Android 12 - 5.10"
         type: boolean
-        default: false
+        default: true
       build_a13_5_15:
         description: "Android 13 - 5.15"
         type: boolean
@@ -144,9 +144,9 @@ on:
         type: boolean
         default: false
       build_all:
-        description: "构建全部版本"
+        description: "Build all versions"
         type: boolean
-        default: true
+        default: false
 
       # ==================== Bot-Push 选项 ====================
       commit:
