@@ -1424,6 +1424,7 @@ jobs:
           if [ "${{ inputs.use_zram }}" == "true" ]; then NAME_INFO="${NAME_INFO}_zram"; fi
           #if [ "${{ env.WITH_BBG }}" == "y" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
           if [ "${{ inputs.use_bbg }}" == "true" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
+          if [ "${{ inputs.use_rekernel }}" == "true" ]; then NAME_INFO="${NAME_INFO}_re";
           if [ "${{ inputs.use_kpm }}" == "true" ]; then NAME_INFO="${NAME_INFO}_kpm"; fi
           #if [ "${{ inputs.enable_tmpfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_tmpfs"; fi
           NAME_INFO="${NAME_INFO}_tmpfs"
@@ -1436,8 +1437,6 @@ jobs:
           echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
 
           cat >> "$CONFIG_FILE" << 'EOF'
-          #CONFIG_REKERNEL=y
-          #CONFIG_REKERNEL_NETWORK=y
           CONFIG_BPF_STREAM_PARSER=y		  
           CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
           CONFIG_NETFILTER_XT_SET=y
