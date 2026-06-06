@@ -1430,7 +1430,10 @@ jobs:
           NAME_INFO="${NAME_INFO}_tmpfs"
           #if [ "${{ env.WITH_SUSFS }}" == "y" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
           if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
-          if [ "${{ inputs.droidspaces }}" != "off" ]; then NAME_INFO="${NAME_INFO}_${{ inputs.droidspaces }}"; fi
+          if [ "${{ inputs.droidspaces }}" != "off" ]; then
+            NAME_INFO="${NAME_INFO}_${{ inputs.droidspaces }}";
+            if [ "${{ inputs.droidspaces_ntsync }}" == "true" ]; then NAME_INFO="${NAME_INFO}nt"; fi
+          fi
           
           NAME_INFO="${NAME_INFO}_$(date +'%d.%m.%y')"
           echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
