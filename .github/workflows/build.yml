@@ -1408,7 +1408,7 @@ jobs:
       - name: NAME_INFO and Config
         run: |
           NAME_INFO="${{ env.NAME_INFO }}"
-          CONFIG_FILE="$DEFCONFIG" # "common/arch/arm64/configs/gki_defconfig"
+          CONFIG_FILE="$KERNEL_ROOT/common/arch/arm64/configs/gki_defconfig" # "$DEFCONFIG" # "common/arch/arm64/configs/gki_defconfig"
   
           if [[ "${{ inputs.custom }}" == "true" ]]; then NAME_INFO="${NAME_INFO}_${{ inputs.custom_name }}"; fi
           if [[ "${{ inputs.add_zeromount }}" == "true" ]]; then NAME_INFO="${NAME_INFO}_Zero"; fi
