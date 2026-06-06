@@ -1407,9 +1407,11 @@ jobs:
   
       - name: NAME_INFO and Config
         run: |
+          echo "Start..."
           NAME_INFO="${{ env.NAME_INFO }}"
           CONFIG_FILE="$KERNEL_ROOT/common/arch/arm64/configs/gki_defconfig" # "$DEFCONFIG" # "common/arch/arm64/configs/gki_defconfig"
   
+          echo "1"
           if [[ "${{ inputs.custom }}" == "true" ]]; then NAME_INFO="${NAME_INFO}_${{ inputs.custom_name }}"; fi
           if [[ "${{ inputs.add_zeromount }}" == "true" ]]; then NAME_INFO="${NAME_INFO}_Zero"; fi
           if [[ "${{ inputs.add_nomount }}" == "true" ]] || [[ "${{ inputs.add_nomountX }}" == "true" ]]; then
@@ -1419,23 +1421,28 @@ jobs:
           fi
           if [[ "${{ inputs.add_hymofs }}" == "true" ]]; then NAME_INFO="${NAME_INFO}_hymofs"; fi
    
+          echo "2"
           #if [ "${{ inputs.bypass_unicode }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
           if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_uni"; fi
           if [ "${{ inputs.use_zram }}" == "true" ]; then NAME_INFO="${NAME_INFO}_zram"; fi
           #if [ "${{ env.WITH_BBG }}" == "y" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
           if [ "${{ inputs.use_bbg }}" == "true" ]; then NAME_INFO="${NAME_INFO}_bbg"; fi
           if [ "${{ inputs.use_rekernel }}" == "true" ]; then NAME_INFO="${NAME_INFO}_re";
+          echo "3"
           if [ "${{ inputs.use_kpm }}" == "true" ]; then NAME_INFO="${NAME_INFO}_kpm"; fi
           #if [ "${{ inputs.enable_tmpfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_tmpfs"; fi
           NAME_INFO="${NAME_INFO}_tmpfs"
+          echo "4"
           #if [ "${{ env.WITH_SUSFS }}" == "y" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
           if [ "${{ inputs.enable_susfs }}" == "true" ]; then NAME_INFO="${NAME_INFO}_susfs"; fi
           if [ "${{ inputs.droidspaces }}" != "off" ]; then NAME_INFO="${NAME_INFO}_${{ inputs.droidspaces }}"; fi
           
+          echo "5"
           NAME_INFO="${NAME_INFO}_$(date +'%d.%m.%y')"
           echo "NAME_INFO=$NAME_INFO" >> $GITHUB_ENV
           echo "${{ inputs.ksu_variant }} NAME_INFO=$NAME_INFO"
 
+          echo "6"
           cat >> "$CONFIG_FILE" << 'EOF'
           CONFIG_BPF_STREAM_PARSER=y		  
           CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
@@ -1477,6 +1484,7 @@ jobs:
           CONFIG_IP_SET_HASH_NETIFACE=y
           CONFIG_IP_SET_LIST_SET=y
           EOF
+          echo "7"
 
       - name: CORRECT stupid
         if: inputs.custom
