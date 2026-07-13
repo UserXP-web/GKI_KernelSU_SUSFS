@@ -1743,7 +1743,7 @@ jobs:
       - name: 上传构建产物
         uses: actions/upload-artifact@v6
         with:
-          name: ReSukiSU_kernel-${{ env.CONFIG }}${{ env.NAME_INFO }}
+          name: ReSukiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ env.ACTUAL_SUBLEVEL }}${{ env.NAME_INFO }}
           path: |
             *AnyKernel3.zip
 #            *.img
@@ -1754,7 +1754,7 @@ jobs:
         if: always() && env.REJ_COUNT > 0
         uses: actions/upload-artifact@v6
         with:
-          name: ReSukiSU_kernel-${{ env.CONFIG }}${{ env.NAME_INFO }}-Rejects
+          name: ReSukiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ env.ACTUAL_SUBLEVEL }}${{ env.NAME_INFO }}-Rejects
           path: patch-rejects/
           if-no-files-found: ignore
           compression-level: 9
