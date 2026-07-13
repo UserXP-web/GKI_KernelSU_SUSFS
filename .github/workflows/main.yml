@@ -8,7 +8,7 @@
 # 4. 创建 GitHub Release (可选)
 # ========================================
 
-name: 构建内核
+name: Build the kernel
 
 # 适配 Node.js 24
 env:
@@ -39,24 +39,24 @@ on:
       # ==================== KernelSU 配置 ====================
       # KernelSU 变体固定为 ReSukiSU
       kernelsu_branch:
-        description: "ReSukiSU branch (main/dev/自定义，留空使用main)"
+        description: "ReSukiSU branch (main/dev/custom, blank to use main)"
         type: string
         default: "main"
         required: false
 
       # ==================== 可选配置 ====================
       version:
-        description: "自定义版本名 (可选)"
+        description: "Custom version name (optional)"
         type: string
         default: ""
         required: false
       build_time:
-        description: "自定义构建时间 (可选，N或留空=当前UTC)"
+        description: "Custom build time (blank = current UTC)"
         type: string
         default: "Sun Dec 01 08:10:00 UTC 2024"
         required: false
       droidspaces:
-        description: "Droidspaces 容器支持 (5.10~6.6: 槽位补丁, 6.12: 开/关)"
+        description: "Droidspaces support (5.10~6.6: slot patch, 6.12: on/off)"
         type: choice
         options:
           - "off"
@@ -65,7 +65,7 @@ on:
           - "345"
         default: "off"
       droidspaces_ntsync:
-        description: "启用 Droidspaces 容器 NTSync 支持（需启用 Droidspaces）"
+        description: "NTSync support for Droidspaces containers"
         type: boolean
         default: false
 
@@ -83,15 +83,54 @@ on:
         type: boolean
         default: false
       cancel_susfs:
-        description: "禁用 SUSFS"
+        description: "CANCEL SUSFS"
         type: boolean
         default: false
+      use_kpm:
+        required: false
+        type: boolean
+        default: false
+      add_zeromount:
+        description: 'Add ZERoMount support (main)'
+        required: false
+        type: boolean
+        default: false
+      add_nomount:
+        description: 'Add NoMount support'
+        required: false
+        type: boolean
+        default: true
+      add_nomountX:
+        description: 'Add NoMount support (saved/old)'
+        required: false
+        type: boolean
+        default: false
+      add_hymofs:
+        description: 'Enable support for HymoFS'
+        required: false
+        type: boolean
+        default: false
+      custom:
+        description: "Custom kernel (AOSP)"
+        required: false
+        type: boolean
+        default: false
+      custom_name:
+        description: "Custom kernel (AOSP) name"
+        required: false
+        type: choice
+        options:
+          - "UserXP"
+          - "playground"
+          - "EvoX"
+          - "zylhdrXP"
+        default: "zylhdrXP"
 
       # ==================== 构建版本选择 ====================
       build_a12_5_10:
         description: "Android 12 - 5.10"
         type: boolean
-        default: false
+        default: true
       build_a13_5_15:
         description: "Android 13 - 5.15"
         type: boolean
@@ -111,7 +150,7 @@ on:
       build_all:
         description: "构建全部版本"
         type: boolean
-        default: true
+        default: false
 
       # ==================== Bot-Push 选项 ====================
       commit:
@@ -147,6 +186,13 @@ jobs:
       cancel_susfs: ${{ inputs.cancel_susfs }}
       droidspaces: ${{ inputs.droidspaces }}
       droidspaces_ntsync: ${{ inputs.droidspaces_ntsync }}
+      use_kpm: ${{ inputs.use_kpm }}
+      add_zeromount: ${{ inputs.add_zeromount }}
+      add_nomount: ${{ inputs.add_nomount }}
+      add_nomountX: ${{ inputs.add_nomountX }}
+      add_hymofs: ${{ inputs.add_hymofs }}
+      custom: ${{ inputs.custom }}
+      custom_name: ${{ inputs.custom_name }}
       called_from_main: true
 
   # ==================== Android 13 - 5.15 构建 ====================
@@ -557,6 +603,7 @@ jobs:
           echo "- **链接**: https://github.com/$REPO_OWNER/$REPO_NAME/releases/tag/$NEW_TAG" >> $GITHUB_STEP_SUMMARY
 
       - name: 发送 Telegram 频道通知
+        if: false
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
@@ -597,6 +644,7 @@ jobs:
             --data-urlencode text="${TEXT}"
             
       - name: 发送 Telegram 群组通知(ReSukiSU群组)
+        if: false
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID_2 }}
@@ -639,6 +687,7 @@ jobs:
             --data-urlencode text="${TEXT}"
 
       - name: 发送 Telegram 群组通知(频道讨论组)
+        if: false
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID_3 }}
