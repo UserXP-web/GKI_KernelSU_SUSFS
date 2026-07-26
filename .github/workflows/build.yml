@@ -668,18 +668,21 @@ jobs:
         git clean -fd drivers/gpu/drm/msm/
         rm -rf techpack/display techpack/audio techpack/video techpack/mmrm 2>/dev/null || true
 
+        echo "1"
         # Στήσιμο Flat Layout των Techpacks στην εργοστασιακή τους μορφή (Ως Modules)
         cp -r $GITHUB_WORKSPACE/sm7435-modules/qcom/opensource/display-drivers ./techpack/display
         cp -r $GITHUB_WORKSPACE/sm7435-modules/qcom/opensource/audio-kernel ./techpack/audio
         cp -r $GITHUB_WORKSPACE/sm7435-modules/qcom/opensource/video-driver ./techpack/video
         cp -r $GITHUB_WORKSPACE/sm7435-modules/qcom/opensource/mmrm-driver ./techpack/mmrm
 
+        echo "2"
         mkdir -p $GITHUB_WORKSPACE/ldcache_garnet
         # 7. LTO Wrapper setup
         echo '#!/bin/bash' > ld-wrapper
         echo 'ld.lld "$@" --lto-cache-dir=$GITHUB_WORKSPACE/ldcache_garnet --lto-partitions=2' >> ld-wrapper
         chmod +x ld-wrapper
 
+        echo "3"
         export CC="ccache clang"
         export LD="$(pwd)/ld-wrapper"
         export HOSTLD="$(pwd)/ld-wrapper"
@@ -689,6 +692,7 @@ jobs:
         export OBJDUMP=llvm-objdump
         export STRIP=llvm-strip
 
+        echo "4"
         # 8. Configuration validation
         make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 O=/home/runner/out \
                     CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
@@ -699,12 +703,14 @@ jobs:
                     MMRM_ROOT=techpack/mmrm \
                     olddefconfig
 
+        echo "5"
         # 9. Force FleurX Identity και απενεργοποίηση των frame warnings
         sed -i '/CONFIG_LOCALVERSION/d' /home/runner/out/.config
         echo 'CONFIG_LOCALVERSION="-FleurX"' >> $/home/runner/out/.config
         sed -i '/CONFIG_FRAME_WARN/d' /home/runner/out/.config
         echo "CONFIG_FRAME_WARN=0" >> /home/runner/out/.config
 
+        echo "6"
         # 10. Compile pristine Image
         make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 O=/home/runner/out \
                     CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
