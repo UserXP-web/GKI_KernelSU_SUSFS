@@ -686,7 +686,7 @@ jobs:
         export STRIP=llvm-strip
 
         # 8. Configuration validation
-        make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 O=$GITHUB_WORKSPACE/kout \
+        make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 O=/home/runner/out \
                     CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
                     TECHPACK=y \
                     DISPLAY_ROOT=techpack/display \
@@ -696,13 +696,13 @@ jobs:
                     olddefconfig
 
         # 9. Force FleurX Identity και απενεργοποίηση των frame warnings
-        sed -i '/CONFIG_LOCALVERSION/d' $GITHUB_WORKSPACE/kout/.config
-        echo 'CONFIG_LOCALVERSION="-FleurX"' >> $GITHUB_WORKSPACE/kout/.config
-        sed -i '/CONFIG_FRAME_WARN/d' $GITHUB_WORKSPACE/kout/.config
-        echo "CONFIG_FRAME_WARN=0" >> $GITHUB_WORKSPACE/kout/.config
+        sed -i '/CONFIG_LOCALVERSION/d' /home/runner/out/.config
+        echo 'CONFIG_LOCALVERSION="-FleurX"' >> $/home/runner/out/.config
+        sed -i '/CONFIG_FRAME_WARN/d' /home/runner/out/.config
+        echo "CONFIG_FRAME_WARN=0" >> /home/runner/out/.config
 
         # 10. Compile pristine Image
-        make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 O=$GITHUB_WORKSPACE/kout \
+        make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 O=/home/runner/out \
                     CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
                     TECHPACK=y \
                     DISPLAY_ROOT=techpack/display \
