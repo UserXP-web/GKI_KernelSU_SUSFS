@@ -362,10 +362,13 @@ jobs:
 
 
 
+    # ABI protection ###############################################
     - name: AOSP support - Add CPU-boost stub symbols
       if: inputs.is_aosp
       run: |
+        if [ "${{ inputs.custom_name }}" != "zylhdrXP" ]; then exit 0; fi
         SUB_DIR="kernel/common" # sm7435
+
         cat > ./$SUB_DIR/drivers/misc/cpu_boost_stub.c << 'EOF'
         // SPDX-License-Identifier: GPL-2.0-only
         #include <linux/module.h>
@@ -591,6 +594,11 @@ jobs:
         sed -i 's/check_defconfig//' ./$SUB_DIR/build.config.gki
 
     - name: 📝 clang...
+      env:
+        Use_Neutron_Clang: false
+        Neutron_Clang_LINK: "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman"
+        CLANG_VERSION: "r563880c" ### NEW_CLANG_LINK="${CLANG_LINK/\{CLANG_VERSION\}/$CLANG_VERSION}" BELLOW
+        CLANG_LINK: "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android16-qpr2-release/clang-r563880c.tar.gz"
       if: inputs.custom
       run: |
         #sudo apt update
@@ -600,32 +608,115 @@ jobs:
         #sudo apt-get install lld
         #sudo apt-get install llvm
 
-        cd "kernel/prebuilts-master/clang/host/linux-x86" ################# android kernel
-        clangVersion="r584948b" # r383902 r416183b r584948b --- r563880b
-        clang_PATH="clang-r563880b" # "clang-$clangVersion"
-        androidVersion="" # 12 or [empty]
-        if [ "${clangVersion}" == "r383902" ]; then androidVersion='12'; fi        
-        echo "============================================================================================="
-        if [ "${androidVersion}" == "" ]; then
-          url2="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-${clangVersion}.tar.gz"
+        if [ "${{ env.Use_Neutron_Clang }}" == "true" ]; then
+          # Κατέβασμα και εγκατάσταση του Neutron Clang (Clang 21 + LTO + Polly)
+          mkdir -p kernel_workspace/neutron-clang
+          cd kernel_workspace/neutron-clang
+          curl -L "${{ env.Neutron_Clang_LINK }}" -o antman
+          chmod +x antman
+          ./antman -S=latest            
         else
-          url2="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${androidVersion}-release/clang-${clangVersion}.tar.gz"
+          # Κατέβασμα Clang στο παρασκήνιο (Background)
+          #if [ "${{ steps.clang-cache.outputs.cache-hit }}" != "true" ]; then
+          #  set -e # stop in 1st error            
+            echo "Cache miss — downloading clang-${{ env.CLANG_VERSION }}..."
+            mkdir -p kernel_workspace/clang-${{ env.CLANG_VERSION }}
+            aria2c -x16 -s16 -k1M -j16 --retry-wait=5 --max-tries=10 \
+              -d /tmp -o clang-${{ env.CLANG_VERSION }}.tar.gz \
+              "${{ env.CLANG_LINK }}"
+            tar -C kernel_workspace/clang-${{ env.CLANG_VERSION }} -zxf /tmp/clang-${{ env.CLANG_VERSION }}.tar.gz
+            rm -f /tmp/clang-${{ env.CLANG_VERSION }}.tar.gz
+          #else
+          #  echo "Clang restored from cache, skipping download."
+          #fi
         fi
-        echo "Downloading... $url2"
-        mkdir -p $clang_PATH &&
-        aria2c -s16 -x16 -k1M $url2 -o clang.zip &&
-        tar -xf clang.zip -C $clang_PATH &&
-        rm -rf clang.zip
-        echo "============================================================================================="
-  
+    - name: 🔨 Build AOSP Kernel (Full Xiaomi Kconfig Overhaul)
+      env:
+        Use_Neutron_Clang: false
+        CLANG_VERSION: "r563880c" ### NEW_CLANG_LINK="${CLANG_LINK/\{CLANG_VERSION\}/$CLANG_VERSION}"
+        kernel_modules_link: "https://github.com/zylhdrXP/android_kernel_xiaomi_sm7435-modules"
+        kernel_modules_branch: "lineage-23.2"
+      if: inputs.is_aosp
+      run: |
+        if [ "${{ inputs.custom_name }}" != "zylhdrXP" ]; then exit 0; fi
+        SUB_DIR="kernel/common" # sm7435
+        
         WORKDIR="$(pwd)"
-        export PATH="$WORKDIR/$clang_PATH/bin:$PATH"
-        export PATH="/usr/lib/ccache:$PATH"
-        echo "PATH=$PATH"
+        export MAP="-fdebug-prefix-map=${GITHUB_WORKSPACE}=. -fmacro-prefix-map=${GITHUB_WORKSPACE}=. -ffile-prefix-map=${GITHUB_WORKSPACE}=."
+        if [ "${{ env.Use_Neutron_Clang }}" == "true" ]; then
+          export PATH="$GITHUB_WORKSPACE/kernel_workspace/neutron-clang/bin:$GITHUB_WORKSPACE/kernel_workspace/build-tools/linux-x86/bin:$PATH"
+        else
+          export PATH="$GITHUB_WORKSPACE/kernel_workspace/clang-${{ env.CLANG_VERSION }}/bin:$GITHUB_WORKSPACE/kernel_workspace/build-tools/linux-x86/bin:$PATH"
+        fi
+        #export CCACHE_DIR="${{ env.CCACHE_DIR }}"
+        #export CCACHE_LOGFILE="${{ github.workspace }}/ccache.log"
+        #export CCACHE_IS_KERNEL_COMPILING=true
+
+        echo "Cloning sm7435-modules..." #######################################################################################
+        rm -rf sm7435-modules 2>/dev/null || true
+        git clone --depth=1 "${{ env.kernel_modules_link }}" -b "${{ env.kernel_modules_branch }}" sm7435-modules
+
+        # Mπαίνουμε στη ρίζα του πυρήνα
+        cd $SUB_DIR # $GITHUB_WORKSPACE/sm7435
+
+        # Επαναφέρουμε όλο το repository σε pristine εργοστασιακή κατάσταση
+        git checkout HEAD -- drivers/gpu/drm/msm/ Makefile
+        git clean -fd drivers/gpu/drm/msm/
+        rm -rf techpack/display techpack/audio techpack/video techpack/mmrm 2>/dev/null || true
+
+        # Στήσιμο Flat Layout των Techpacks στην εργοστασιακή τους μορφή (Ως Modules)
+        cp -r $GITHUB_WORKSPACE/sm7435-modules/qcom/opensource/display-drivers ./techpack/display
+        cp -r $GITHUB_WORKSPACE/sm7435-modules/qcom/opensource/audio-kernel ./techpack/audio
+        cp -r $GITHUB_WORKSPACE/sm7435-modules/qcom/opensource/video-driver ./techpack/video
+        cp -r $GITHUB_WORKSPACE/sm7435-modules/qcom/opensource/mmrm-driver ./techpack/mmrm
+
+        mkdir -p $GITHUB_WORKSPACE/ldcache_garnet
+        # 7. LTO Wrapper setup
+        echo '#!/bin/bash' > ld-wrapper
+        echo 'ld.lld "$@" --lto-cache-dir=$GITHUB_WORKSPACE/ldcache_garnet --lto-partitions=2' >> ld-wrapper
+        chmod +x ld-wrapper
+
+        export CC="ccache clang"
+        export LD="$(pwd)/ld-wrapper"
+        export HOSTLD="$(pwd)/ld-wrapper"
+        export AR=llvm-ar
+        export NM=llvm-nm
+        export OBJCOPY=llvm-objcopy
+        export OBJDUMP=llvm-objdump
+        export STRIP=llvm-strip
+
+        # 8. Configuration validation
+        make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 O=$GITHUB_WORKSPACE/kout \
+                    CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
+                    TECHPACK=y \
+                    DISPLAY_ROOT=techpack/display \
+                    VIDEO_ROOT=techpack/video \
+                    AUDIO_ROOT=techpack/audio \
+                    MMRM_ROOT=techpack/mmrm \
+                    olddefconfig
+
+        # 9. Force FleurX Identity και απενεργοποίηση των frame warnings
+        sed -i '/CONFIG_LOCALVERSION/d' $GITHUB_WORKSPACE/kout/.config
+        echo 'CONFIG_LOCALVERSION="-FleurX"' >> $GITHUB_WORKSPACE/kout/.config
+        sed -i '/CONFIG_FRAME_WARN/d' $GITHUB_WORKSPACE/kout/.config
+        echo "CONFIG_FRAME_WARN=0" >> $GITHUB_WORKSPACE/kout/.config
+
+        # 10. Compile pristine Image
+        make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 O=$GITHUB_WORKSPACE/kout \
+                    CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
+                    TECHPACK=y \
+                    DISPLAY_ROOT=techpack/display \
+                    VIDEO_ROOT=techpack/video \
+                    AUDIO_ROOT=techpack/audio \
+                    MMRM_ROOT=techpack/mmrm \
+                    Image
+
+
 
 
 
     - name: Build Normal Kernel
+      if: !inputs.is_aosp
       env:
         SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
         KBUILD_BUILD_TIMESTAMP: ${{ env.KBUILD_BUILD_TIMESTAMP }}
