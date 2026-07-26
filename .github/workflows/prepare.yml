@@ -57,6 +57,10 @@ on:
         required: false
         type: string
         default: ""
+      is_aosp:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   generate-matrix:
@@ -139,4 +143,5 @@ jobs:
       skip_proper: ${{ inputs.skip_proper }}
       custom: ${{ inputs.custom }}
       custom_name: ${{ inputs.custom_name }}
+      is_aosp: ${{ inputs.is_aosp }}
     secrets: inherit
