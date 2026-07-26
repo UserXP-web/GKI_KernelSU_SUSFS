@@ -704,11 +704,11 @@ jobs:
                     olddefconfig
 
         echo "5"
-        # 9. Force FleurX Identity και απενεργοποίηση των frame warnings
-        sed -i '/CONFIG_LOCALVERSION/d' /home/runner/out/.config
-        echo 'CONFIG_LOCALVERSION="-FleurX"' >> $/home/runner/out/.config
-        sed -i '/CONFIG_FRAME_WARN/d' /home/runner/out/.config
-        echo "CONFIG_FRAME_WARN=0" >> /home/runner/out/.config
+        ## 9. Force FleurX Identity και απενεργοποίηση των frame warnings
+        #sed -i '/CONFIG_LOCALVERSION/d' /home/runner/out/.config
+        #echo 'CONFIG_LOCALVERSION="-FleurX"' >> $/home/runner/out/.config
+        #sed -i '/CONFIG_FRAME_WARN/d' /home/runner/out/.config
+        #echo "CONFIG_FRAME_WARN=0" >> /home/runner/out/.config
 
         echo "6"
         # 10. Compile pristine Image
