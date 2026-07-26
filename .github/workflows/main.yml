@@ -136,6 +136,11 @@ on:
           - "EvoX"
           - "zylhdrXP"
         default: "zylhdrXP"
+      is_aosp:
+        description: 'AOSP ROM building...'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   prepare-ccache:
@@ -188,6 +193,7 @@ jobs:
       skip_proper: ${{ inputs.skip_proper }}
       custom: ${{ inputs.custom }}
       custom_name: ${{ inputs.custom_name }}
+      is_aosp: ${{ inputs.is_aosp }}
     secrets: inherit
 
   build-android13-5-10:
