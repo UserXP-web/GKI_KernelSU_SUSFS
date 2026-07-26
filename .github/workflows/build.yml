@@ -636,6 +636,7 @@ jobs:
         CLANG_VERSION: "r563880c" ### NEW_CLANG_LINK="${CLANG_LINK/\{CLANG_VERSION\}/$CLANG_VERSION}"
         kernel_modules_link: "https://github.com/zylhdrXP/android_kernel_xiaomi_sm7435-modules"
         kernel_modules_branch: "lineage-23.2"
+        FINAL_CONFIG_LINK: "https://raw.githubusercontent.com/UserXP-web/kernel_build/refs/heads/main/configs/config_from_fleurx"
       if: inputs.is_aosp
       run: |
         if [ "${{ inputs.custom_name }}" != "zylhdrXP" ]; then exit 0; fi
@@ -655,6 +656,8 @@ jobs:
         echo "Cloning sm7435-modules..." #######################################################################################
         rm -rf sm7435-modules 2>/dev/null || true
         git clone --depth=1 "${{ env.kernel_modules_link }}" -b "${{ env.kernel_modules_branch }}" sm7435-modules
+        echo "Downloading config_from_fleurx..."
+        curl -L "${{ env.FINAL_CONFIG_LINK }}" -o /home/runner/out/.config
 
         # Mπαίνουμε στη ρίζα του πυρήνα
         cd $SUB_DIR # $GITHUB_WORKSPACE/sm7435
