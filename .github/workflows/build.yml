@@ -71,6 +71,10 @@ on:
         required: false
         type: string
         default: ""
+      is_aosp:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-gki:
@@ -358,7 +362,27 @@ jobs:
 
 
 
+    - name: AOSP support - Add CPU-boost stub symbols
+      if: inputs.is_aosp
+      run: |
+        SUB_DIR="kernel/common" # sm7435
+        cat > ./$SUB_DIR/drivers/misc/cpu_boost_stub.c << 'EOF'
+        // SPDX-License-Identifier: GPL-2.0-only
+        #include <linux/module.h>
+        #include <linux/export.h>
 
+        int kp_active_mode(void)
+        {
+                return 0;
+        }
+        EXPORT_SYMBOL(kp_active_mode);
+
+        void cpu_boost_kick(int n)
+        {
+        }
+        EXPORT_SYMBOL(cpu_boost_kick);
+        EOF
+        echo "obj-y += cpu_boost_stub.o" >> ./$SUB_DIR/drivers/misc/Makefile
     - name: Check if BBG
       if: contains(inputs.feature_set, 'BBG') || inputs.feature_set == 'FULL'
       run: echo "WITH_BBG=y" >> $GITHUB_ENV
