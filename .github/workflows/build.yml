@@ -716,7 +716,7 @@ jobs:
 
 
     - name: Build Normal Kernel
-      if: !inputs.is_aosp
+      if: ${{ !inputs.is_aosp }}
       env:
         SOURCE_DATE_EPOCH: ${{ env.SOURCE_DATE_EPOCH }}
         KBUILD_BUILD_TIMESTAMP: ${{ env.KBUILD_BUILD_TIMESTAMP }}
