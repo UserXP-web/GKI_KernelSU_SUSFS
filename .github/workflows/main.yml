@@ -34,8 +34,9 @@ on:
         options:
           - KSUN+SUSFS+BBG+NET+DS
           - KSUN+SUSFS+BBG+NET
-          - KSUN+SUSFS+BBG+DS
+          - KSUN+SUSFS+BBG+DS          
           - KSUN+SUSFS+BBG
+          - KSUN+SUSFS+NET+DS
           - KSUN+SUSFS+NET
           - KSUN+SUSFS+DS
           - KSUN+SUSFS
