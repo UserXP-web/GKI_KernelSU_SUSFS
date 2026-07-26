@@ -657,6 +657,7 @@ jobs:
         rm -rf sm7435-modules 2>/dev/null || true
         git clone --depth=1 "${{ env.kernel_modules_link }}" -b "${{ env.kernel_modules_branch }}" sm7435-modules
         echo "Downloading config_from_fleurx..."
+        mkdir -p /home/runner/out
         curl -L "${{ env.FINAL_CONFIG_LINK }}" -o /home/runner/out/.config
 
         # Mπαίνουμε στη ρίζα του πυρήνα
