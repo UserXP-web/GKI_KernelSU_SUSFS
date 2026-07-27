@@ -720,19 +720,13 @@ jobs:
                     AUDIO_ROOT=techpack/audio \
                     MMRM_ROOT=techpack/mmrm \
                     Image
-    - name: AOSP artifacts
-      if: inputs.is_aosp
-      run: |
+
         set -euo pipefail
-        if [ -f "/home/runner/out/dist/Image" ]; then
-          echo "Found Image at /home/runner/out/dist/Image"
-          cp "/home/runner/out/dist/Image" "${{ github.workspace }}/AnyKernel3/Image"
+        if [ -f "/home/runner/out/arch/arm64/boot/Image" ]; then
+          echo "Found Image at /home/runner/out/arch/arm64/boot/Image"
+          cp "/home/runner/out/arch/arm64/boot/Image" "${{ github.workspace }}/AnyKernel3/Image"
           echo "Kernel Version:"
-          strings "/home/runner/out/dist/Image" | grep -m1 "^Linux version "
-          exit 0
-        elif [ -f "/home/runner/out/Image" ]; then
-          echo "Found Image at /home/runner/out/Image"
-          cp "/home/runner/out/Image" "${{ github.workspace }}/AnyKernel3/Image"
+          strings "/home/runner/out/arch/arm64/boot/Image" | grep -m1 "^Linux version "
         else
           echo "NOT Found any Image"
         fi
