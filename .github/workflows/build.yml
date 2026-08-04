@@ -1537,6 +1537,14 @@ jobs:
           #sed -i 's|^POST_DEFCONFIG_CMDS=.*|POST_DEFCONFIG_CMDS=""|' "$GITHUB_WORKSPACE/$CONFIG/$SUB_DIR/build.config.gki"
           sed -i 's/check_defconfig//' ./$SUB_DIR/build.config.gki
 
+      - name: OTHER stupid
+        if: true
+        working-directory: ${{ env.KERNEL_ROOT }}
+        run: |
+          SUB_DIR="common" # sm7435
+          # MANY-MANY stupids
+          sed -i 's/set_nameidata(nd, old_dfd, fake_filename, NULL);/set_nameidata(nd, old_dfd, fake_filename);/g' ./$SUB_DIR/fs/namei.c
+
       - name: 📝 clang... lld...
         if: inputs.custom
         run: |
