@@ -1795,7 +1795,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: ReSukiSU_${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ env.ACTUAL_SUBLEVEL }}${{ env.NAME_INFO }}-AnyKernel3
-          path: $ANYKERNEL3/**
+          path: ${{ github.workspace }}/${{ env.ANYKERNEL3 }}/**
 #          path: |
 #            *AnyKernel3.zip
 #            *.img
