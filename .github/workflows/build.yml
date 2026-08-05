@@ -1026,7 +1026,7 @@ jobs:
           cp -r $SUKISU_PATCHES/other/zram/lz4k_oplus ./lib/
 
           cp $SUKISU_PATCHES/other/zram/zram_patch/${{ inputs.kernel_version }}/lz4kd.patch ./
-          if ! patch -p1 -F 3 < lz4kd.patch; then
+          if ! patch -p1 -F 10 < lz4kd.patch; then
             echo "::warning::lz4kd.patch 应用失败，可能已应用或上下文不匹配"
           fi
 
@@ -1551,6 +1551,11 @@ jobs:
             # Force the lz4k internal Makefile to build when your ZRAM option is on
             sed -i 's/CONFIG_LZ4K_COMPRESS/CONFIG_ZRAM_DEF_COMP_LZ4KD/g' ./$SUB_DIR/lib/lz4k/Makefile
             sed -i 's/CONFIG_LZ4K_DECOMPRESS/CONFIG_ZRAM_DEF_COMP_LZ4KD/g' ./$SUB_DIR/lib/lz4k/Makefile
+            sed -i 's/CONFIG_LZ4KD_COMPRESS/CONFIG_ZRAM_DEF_COMP_LZ4KD/g' ./$SUB_DIR/lib/lz4kd/Makefile
+            sed -i 's/CONFIG_LZ4KD_DECOMPRESS/CONFIG_ZRAM_DEF_COMP_LZ4KD/g' ./$SUB_DIR/lib/lz4kd/Makefile
+
+            # 1st .patch fail
+            sed -i '/config LZ4_DECOMPRESS/,/tristate/!b; /tristate/a \\nconfig LZ4K_COMPRESS\n\ttristate\n\nconfig LZ4K_DECOMPRESS\n\ttristate\n\nconfig LZ4KD_COMPRESS\n\ttristate\n\nconfig LZ4KD_DECOMPRESS\n\ttristate' ./$SUB_DIR/lib/Kconfig
           fi
       - name: 📝 clang... lld...
         if: inputs.custom
