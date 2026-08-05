@@ -1545,6 +1545,10 @@ jobs:
           # MANY-MANY stupids
           sed -i 's/set_nameidata(nd, old_dfd, fake_filename, NULL);/set_nameidata(nd, old_dfd, fake_filename);/g' ./$SUB_DIR/fs/namei.c
 
+          if [ ${{ inputs.custom }} && ${{ inputs.use_zram }} ]; then
+            echo "Do correct(?) lz4k..."
+            sed -i '/obj-$(CONFIG_LZ4_DECOMPRESS) += lz4\//a obj-$(CONFIG_ZRAM_DEF_COMP_LZ4KD) += lz4k/' ./$SUB_DIR/lib/Makefile
+          fi
       - name: 📝 clang... lld...
         if: inputs.custom
         run: |
